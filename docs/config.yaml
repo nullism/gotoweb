@@ -1,0 +1,9 @@
+name: Gotoweb Documentation
+
+theme_root_directory: /home/nullism/gitroot/gotoweb/themes
+
+theme:
+  name: default
+
+  args:
+    style: dark
