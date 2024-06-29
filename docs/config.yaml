@@ -1,6 +1,6 @@
 name: Gotoweb Documentation
 
-theme_directory: ../themes/default/
+theme_directory: ../themes/base/
 
 theme:
   name: default

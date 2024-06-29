@@ -6,9 +6,8 @@
 
 <body>
     <h1>{{ .Site.Name }}</h1>
-    <p>{{ if .Post }}{{.Post.Body}}{{end}}</p>
 
-
+    {{ if .Post }}{{.Post.Body}}{{end}}
 </body>
 
 
