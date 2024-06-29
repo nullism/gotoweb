@@ -5,8 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/nullism/gotoweb/logging"
 	"gopkg.in/yaml.v3"
 )
+
+var log = logging.GetLogger()
 
 type SiteConfig struct {
 	Name       string
@@ -14,7 +17,7 @@ type SiteConfig struct {
 	ConfigPath string // path to config.yaml
 	RootDir    string
 	SourceDir  string
-	ThemeDir   *string `yaml:"theme_root_directory"`
+	ThemeDir   *string `yaml:"theme_directory"`
 }
 
 func SiteFromConfig() (*SiteConfig, error) {
@@ -32,13 +35,17 @@ func SiteFromConfig() (*SiteConfig, error) {
 		return nil, fmt.Errorf("could not unmarshal config: %w", err)
 	}
 
-	println("config: ", string(bs))
 	sc.ConfigPath = confPath
 	sc.RootDir = filepath.Dir(confPath)
 	sc.SourceDir = filepath.Join(sc.RootDir, "source")
 	if sc.ThemeDir == nil {
 		tp := filepath.Join(sc.RootDir, "themes", sc.Theme.Name)
 		sc.ThemeDir = &tp
+	} else if !filepath.IsAbs(*sc.ThemeDir) {
+		td := filepath.Join(sc.RootDir, *sc.ThemeDir)
+		sc.ThemeDir = &td
 	}
+
+	log.Info("Loaded config", "config", sc)
 	return &sc, nil
 }

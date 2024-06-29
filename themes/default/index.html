@@ -1,14 +1,13 @@
 <html>
 
 <head>
-    <title>{{ .Title }}</title>
+    <title>{{ .Site.Name }}</title>
 </head>
 
 <body>
-    <h1>{{ .Title }}</h1>
-    <p>{{ .Body }}</p>
+    <h1>{{ .Site.Name }}</h1>
+    <p>{{ if .Post }}{{.Post.Body}}{{end}}</p>
 
-    {{ template "thumb" test}}
 
 </body>
 

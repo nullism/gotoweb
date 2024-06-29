@@ -1,6 +1,6 @@
 name: Gotoweb Documentation
 
-theme_root_directory: /home/nullism/gitroot/gotoweb/themes
+theme_directory: ../themes/default/
 
 theme:
   name: default

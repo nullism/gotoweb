@@ -6,3 +6,7 @@ type Post struct {
 	SourcePath string
 	DestPath   string
 }
+
+func PostFromSource(soursePath string) (*Post, error) {
+	return &Post{Title: "unimplemented", Body: "<b>STUFF</b>"}, nil
+}

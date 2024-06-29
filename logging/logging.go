@@ -2,7 +2,7 @@ package logging
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -39,22 +39,24 @@ func (h *CLIHandler) Handle(ctx context.Context, r slog.Record) error {
 		level = color.RedString(level)
 	}
 
-	fields := make(map[string]interface{}, r.NumAttrs())
+	fields := make(map[string]any, r.NumAttrs())
 	r.Attrs(func(a slog.Attr) bool {
 		fields[a.Key] = a.Value.Any()
 
 		return true
 	})
 
-	b, err := json.MarshalIndent(fields, "", "  ")
-	if err != nil {
-		return err
-	}
+	// b, err := json.MarshalIndent(fields, "", "  ")
+	// if err != nil {
+	// 	return err
+	// }
 
-	timeStr := r.Time.Format("[15:05:05.000]")
+	timeStr := r.Time.Format("[15:04:05]")
 	msg := color.WhiteString(r.Message)
-
-	println(timeStr, level, msg, string(b))
+	println(timeStr, level, msg)
+	for k, v := range fields {
+		fmt.Printf("  %v: %v\n", k, v)
+	}
 
 	return nil
 }
