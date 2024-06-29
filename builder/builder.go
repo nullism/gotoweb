@@ -44,8 +44,8 @@ func (b *Builder) Render(htmlPath string, content any) (string, error) {
 
 func (b *Builder) buildOne(tplFname, mdFname string, content *RenderContext) (string, error) {
 	full := filepath.Join(b.site.SourceDir, mdFname)
-	_, err := os.Stat(full)
-	if err == nil {
+	fi, err := os.Stat(full)
+	if err == nil && !fi.IsDir() {
 		p, err := models.PostFromSource(full)
 		if err != nil {
 			return "", err
@@ -66,6 +66,15 @@ func (b *Builder) Build() {
 		return
 	}
 	log.Debug("Rendered template", "output", out)
+
+	b.context.Post = nil
+	out, err = b.buildOne("index.html", "", b.context)
+	if err != nil {
+		log.Error("Could not render another template", "error", err)
+		return
+
+	}
+	log.Debug("Rendered another template", "output", out)
 
 	// TODO: Send entire context to all templates (all posts, site config, etc.)
 	// but also, iterate posts and render each one.
