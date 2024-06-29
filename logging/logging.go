@@ -13,18 +13,26 @@ type Logger struct {
 	*slog.Logger
 }
 
+var logLevel slog.LevelVar
+
 func GetLogger() *Logger {
 	return &Logger{
 		slog.New(
-			&CLIHandler{slog.NewTextHandler(os.Stdout, nil)},
+			&CLIHandler{slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})},
 		),
 	}
+}
+
+func Configure(level slog.Level) {
+	logLevel.Set(level)
+	slog.SetLogLoggerLevel(level)
 }
 
 type CLIHandler struct {
 	slog.Handler
 }
 
+// Handle implements slog.Handler.
 func (h *CLIHandler) Handle(ctx context.Context, r slog.Record) error {
 	level := r.Level.String()
 
@@ -45,11 +53,6 @@ func (h *CLIHandler) Handle(ctx context.Context, r slog.Record) error {
 
 		return true
 	})
-
-	// b, err := json.MarshalIndent(fields, "", "  ")
-	// if err != nil {
-	// 	return err
-	// }
 
 	timeStr := r.Time.Format("[15:04:05]")
 	msg := color.WhiteString(r.Message)

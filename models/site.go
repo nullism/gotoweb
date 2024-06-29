@@ -42,6 +42,7 @@ func SiteFromConfig() (*SiteConfig, error) {
 		tp := filepath.Join(sc.RootDir, "themes", sc.Theme.Name)
 		sc.ThemeDir = &tp
 	} else if !filepath.IsAbs(*sc.ThemeDir) {
+		// make it absolute and preserve relative paths, e.g /root/../../themes/foo
 		td := filepath.Join(sc.RootDir, *sc.ThemeDir)
 		sc.ThemeDir = &td
 	}

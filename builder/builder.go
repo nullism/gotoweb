@@ -2,6 +2,7 @@ package builder
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -42,13 +43,14 @@ func (b *Builder) Render(htmlPath string, content any) (string, error) {
 }
 
 func (b *Builder) buildOne(tplFname, mdFname string, content *RenderContext) (string, error) {
-	_, err := os.Stat(b.site.SourceDir + "/" + mdFname)
+	full := filepath.Join(b.site.SourceDir, mdFname)
+	_, err := os.Stat(full)
 	if err == nil {
-		p, err := models.PostFromSource(b.site.SourceDir + "/" + mdFname)
+		p, err := models.PostFromSource(full)
 		if err != nil {
 			return "", err
 		}
-		log.Info("Rendering", "from", mdFname, "post", p)
+		log.Debug("Rendering "+full, "from", mdFname, "post", p)
 		content.Post = p
 	}
 
@@ -63,7 +65,7 @@ func (b *Builder) Build() {
 		log.Error("Could not render template", "error", err)
 		return
 	}
-	log.Info("Rendered template", "output", out)
+	log.Debug("Rendered template", "output", out)
 
 	// TODO: Send entire context to all templates (all posts, site config, etc.)
 	// but also, iterate posts and render each one.

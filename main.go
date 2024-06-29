@@ -1,8 +1,11 @@
 package main
 
 import (
+	"log/slog"
+
 	"github.com/alecthomas/kong"
 	"github.com/nullism/gotoweb/builder"
+	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/models"
 	"github.com/nullism/gotoweb/newsite"
 )
@@ -16,8 +19,9 @@ type New struct {
 }
 
 var CLI struct {
-	Build Build `cmd:"build" description:"Build the project"`
-	New   New   `cmd:"new" description:"Create a new project"`
+	Verbose bool  `short:"v" help:"Enable verbose output."`
+	Build   Build `cmd:"build" help:"Build the project"`
+	New     New   `cmd:"new" help:"Create a new project"`
 }
 
 type Page struct {
@@ -27,6 +31,9 @@ type Page struct {
 
 func main() {
 	ctx := kong.Parse(&CLI)
+	if CLI.Verbose {
+		logging.Configure(slog.LevelDebug)
+	}
 	switch ctx.Command() {
 	case "new <name>":
 		ns, err := newsite.New(CLI.New.Name)
@@ -55,7 +62,7 @@ func main() {
 		// }
 		// println("Building project")
 	default:
-		ctx.PrintUsage(true)
+		_ = ctx.PrintUsage(true)
 	}
 
 }
