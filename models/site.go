@@ -15,9 +15,10 @@ type SiteConfig struct {
 	Name       string
 	Theme      ThemeConfig
 	ConfigPath string // path to config.yaml
+	PublicDir  string
 	RootDir    string
 	SourceDir  string
-	ThemeDir   *string `yaml:"theme_directory"`
+	ThemeDir   string `yaml:"theme_directory"`
 }
 
 func SiteFromConfig() (*SiteConfig, error) {
@@ -37,16 +38,25 @@ func SiteFromConfig() (*SiteConfig, error) {
 
 	sc.ConfigPath = confPath
 	sc.RootDir = filepath.Dir(confPath)
-	sc.SourceDir = filepath.Join(sc.RootDir, "source")
-	if sc.ThemeDir == nil {
-		tp := filepath.Join(sc.RootDir, "themes", sc.Theme.Name)
-		sc.ThemeDir = &tp
-	} else if !filepath.IsAbs(*sc.ThemeDir) {
+	sc.SourceDir = filepath.Join(sc.RootDir, SourceDir)
+	if sc.ThemeDir == "" {
+		tp := filepath.Join(sc.RootDir, ThemesDir, sc.Theme.Name)
+		sc.ThemeDir = tp
+	} else if !filepath.IsAbs(sc.ThemeDir) {
 		// make it absolute and preserve relative paths, e.g /root/../../themes/foo
-		td := filepath.Join(sc.RootDir, *sc.ThemeDir)
-		sc.ThemeDir = &td
+		td := filepath.Join(sc.RootDir, sc.ThemeDir)
+		sc.ThemeDir = td
 	}
 
-	log.Info("Loaded config", "config", sc)
+	if sc.PublicDir == "" {
+		sd := filepath.Join(sc.RootDir, PublicDir)
+		sc.PublicDir = sd
+	} else if !filepath.IsAbs(sc.PublicDir) {
+		// make it absolute and preserve relative paths, e.g /root/../../public
+		pd := filepath.Join(sc.RootDir, sc.PublicDir)
+		sc.PublicDir = pd
+	}
+
+	log.Info("Loaded config", "site name", sc.Name, "public dir", sc.PublicDir, "source dir", sc.SourceDir, "theme dir", sc.ThemeDir)
 	return &sc, nil
 }

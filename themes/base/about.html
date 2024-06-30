@@ -1,0 +1,17 @@
+<html>
+
+<head>
+    <title>About {{ .Site.Name }}</title>
+</head>
+
+<body>
+    <h1>About {{ .Site.Name }}</h1>
+
+    {{ if .Post }}
+    {{ .Post.Body }}
+    {{ end }}
+
+    {{ tpl "foo" "name" "one" "src" "http://foo" }}
+</body>
+
+</html>

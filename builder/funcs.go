@@ -3,22 +3,25 @@ package builder
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+
+	"github.com/nullism/gotoweb/models"
 )
 
 func (b *Builder) getFuncMap() map[string]any {
 	return map[string]any{
-		"include": b.include,
-		"map":     b.toMap,
+		"tpl": b.tpl,
+		"map": b.toMap,
 	}
 }
 
-func (b *Builder) include(name string, pairs ...any) (string, error) {
+func (b *Builder) tpl(name string, pairs ...any) (string, error) {
 	m, err := b.toMap(pairs...)
 	if err != nil {
 		return "", err
 	}
-
-	return b.Render(name, m)
+	path := filepath.Join(b.site.ThemeDir, models.HelpersDir, name+".html")
+	return b.Render(path, m)
 }
 
 func (b *Builder) toMap(pairs ...any) (map[string]any, error) {

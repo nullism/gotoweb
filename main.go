@@ -50,7 +50,10 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		bldr.Build()
+		err = bldr.Build()
+		if err != nil {
+			panic(err)
+		}
 
 		// tpl, err := template.ParseFiles("themes/default/index.html", "themes/default/templates/thumb.html")
 		// if err != nil {

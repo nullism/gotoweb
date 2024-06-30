@@ -58,7 +58,7 @@ func (h *CLIHandler) Handle(ctx context.Context, r slog.Record) error {
 	msg := color.WhiteString(r.Message)
 	println(timeStr, level, msg)
 	for k, v := range fields {
-		fmt.Printf("  %v: %v\n", k, v)
+		fmt.Printf("  %v:\t%v\n", k, v)
 	}
 
 	return nil
