@@ -37,7 +37,7 @@ func (b *Builder) Render(tplPath string, content any) (string, error) {
 		return "", err
 	}
 
-	tpl, err := template.New("foo").Funcs(b.getFuncMap()).Parse(string(bs))
+	tpl, err := template.New("foo").Funcs(b.getFuncMap()).Option("missingkey=error").Parse(string(bs))
 
 	if err != nil {
 		return "", err
@@ -48,39 +48,17 @@ func (b *Builder) Render(tplPath string, content any) (string, error) {
 	return sb.String(), err
 }
 
-func (b *Builder) renderOne(tplPath, mdPath string, content *RenderContext) (string, error) {
-	fi, err := os.Stat(mdPath)
-	if err == nil && !fi.IsDir() {
-		p, err := models.PostFromSource(mdPath)
-		if err != nil {
-			return "", err
-		}
-		log.Debug("rendering "+mdPath, "template", tplPath, "post", p)
-		content.Post = p
-	} else {
-		log.Warn("no source file for page", "source", mdPath, "template", tplPath)
-	}
-
-	return b.Render(tplPath, content)
-}
-
-func (b *Builder) buildOne(tplPath, mdPath, outPath string, content *RenderContext) error {
-	out, err := b.renderOne(tplPath, mdPath, content)
+func (b *Builder) BuildOne(tplPath, outPath string) error {
+	log.Debug("building "+filepath.Base(outPath), "from", tplPath, "to", outPath)
+	out, err := b.Render(tplPath, b.context)
 	if err != nil {
 		return err
 	}
 	err = os.WriteFile(outPath, []byte(out), 0644)
-	if err != nil {
-		return err
-	}
-	if content != nil {
-		content.Reset()
-	}
-	log.Debug("rendered template", "from", tplPath, "to", outPath)
-	return nil
+	return err
 }
 
-func (b *Builder) buildPosts() error {
+func (b *Builder) BuildPosts() error {
 	pubPostsDir := filepath.Join(b.site.PublicDir, models.PostsDir)
 	tplPath := filepath.Join(b.site.ThemeDir, "post.html")
 	_, err := os.Stat(pubPostsDir)
@@ -97,21 +75,33 @@ func (b *Builder) buildPosts() error {
 		if d.IsDir() {
 			return nil
 		}
+		if filepath.Ext(d.Name()) != ".md" {
+			// TODO: copy files over?
+			return nil
+		}
 		log.Debug("building post", "file", path, "name", d.Name())
 		plain := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
 		outPath := filepath.Join(pubPostsDir, plain+".html")
-
-		return b.buildOne(tplPath, path, outPath, b.context)
+		post, err := models.PostFromSource(path)
+		if err != nil {
+			return err
+		}
+		b.context.Post = post
+		b.context.Posts = append(b.context.Posts, post)
+		return b.BuildOne(tplPath, outPath)
 	})
 	return err
 }
 
 func (b *Builder) checkDirectories() error {
+	// Source directory
 	sd, err := os.Stat(b.site.SourceDir)
 	if err != nil || !sd.IsDir() {
 		log.Error("source directory inaccessible", "directory", b.site.SourceDir)
 		return err
 	}
+
+	// Public directory
 	pd, err := os.Stat(b.site.PublicDir)
 	if err != nil {
 		err2 := os.Mkdir(b.site.PublicDir, 0755)
@@ -126,7 +116,7 @@ func (b *Builder) checkDirectories() error {
 	return nil
 }
 
-func (b *Builder) Build() error {
+func (b *Builder) BuildAll() error {
 	log.Info("Building project", "site", b.site.Name)
 
 	err := b.checkDirectories()
@@ -135,28 +125,36 @@ func (b *Builder) Build() error {
 		return err
 	}
 
+	// build posts
+	err = b.BuildPosts()
+	if err != nil {
+		return err
+	}
+
+	// build pages
 	for _, tpl := range []string{"index", "about"} {
-		err = b.buildOne(
-			filepath.Join(b.site.ThemeDir, tpl+".html"),
-			filepath.Join(b.site.SourceDir, tpl+".md"),
-			filepath.Join(b.site.PublicDir, tpl+".html"),
-			b.context)
+		tplPath := filepath.Join(b.site.ThemeDir, tpl+".html")
+		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
+		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
+
+		if _, err := os.Stat(sourcePath); err == nil {
+			p, err := models.PostFromSource(sourcePath)
+			if err != nil {
+				log.Error("Could not render template", "error", err)
+				return err
+			}
+			b.context.Post = p
+		} else {
+			b.context.Post = nil
+		}
+
+		err = b.BuildOne(tplPath, outPath)
 
 		if err != nil {
 			log.Error("Could not render template", "error", err)
 			return err
 		}
 	}
-
-	err = b.buildPosts()
-	if err != nil {
-		return err
-	}
-	b.context.Post = nil
-
-	// TODO: Send entire context to all templates (all posts, site config, etc.)
-	// but also, iterate posts and render each one.
-	// Does this make sense? Post pagination?
 
 	return nil
 }

@@ -1,0 +1,15 @@
+<html>
+
+<head>
+    <title>Posts</title>
+</head>
+
+<body>
+    <h1>Posts</h1>
+    {{ range .Posts }}
+    <h2>{{ .Title }}</h2>
+    <p>{{ .Body }}</p>
+    {{ end }}
+</body>
+
+</html>

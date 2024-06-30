@@ -21,7 +21,8 @@ func (b *Builder) tpl(name string, pairs ...any) (string, error) {
 		return "", err
 	}
 	path := filepath.Join(b.site.ThemeDir, models.HelpersDir, name+".html")
-	return b.Render(path, m)
+	b.context.Args = m
+	return b.Render(path, b.context)
 }
 
 func (b *Builder) toMap(pairs ...any) (map[string]any, error) {

@@ -50,7 +50,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = bldr.Build()
+		err = bldr.BuildAll()
 		if err != nil {
 			panic(err)
 		}
