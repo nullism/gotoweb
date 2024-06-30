@@ -81,16 +81,27 @@ func (b *Builder) buildOne(tplPath, mdPath, outPath string, content *RenderConte
 }
 
 func (b *Builder) buildPosts() error {
-	err := filepath.WalkDir(filepath.Join(b.site.SourceDir, models.PostsDir), func(path string, d os.DirEntry, err error) error {
+	pubPostsDir := filepath.Join(b.site.PublicDir, models.PostsDir)
+	tplPath := filepath.Join(b.site.ThemeDir, "post.html")
+	_, err := os.Stat(pubPostsDir)
+	if err != nil {
+		err2 := os.Mkdir(pubPostsDir, 0755)
+		if err2 != nil {
+			return err2
+		}
+	}
+	err = filepath.WalkDir(filepath.Join(b.site.SourceDir, models.PostsDir), func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
-		log.Debug("building post", "file", path)
+		log.Debug("building post", "file", path, "name", d.Name())
+		plain := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
+		outPath := filepath.Join(pubPostsDir, plain+".html")
 
-		return nil
+		return b.buildOne(tplPath, path, outPath, b.context)
 	})
 	return err
 }
@@ -124,7 +135,6 @@ func (b *Builder) Build() error {
 		return err
 	}
 
-	// out, err := b.Render(*b.site.ThemeDir+"/index.html", b.context)
 	for _, tpl := range []string{"index", "about"} {
 		err = b.buildOne(
 			filepath.Join(b.site.ThemeDir, tpl+".html"),
