@@ -2,6 +2,7 @@ package builder
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/models"
+	"github.com/nullism/gotoweb/theme"
 )
 
 var log = logging.GetLogger()
@@ -31,13 +33,14 @@ func New(conf *models.SiteConfig) (*Builder, error) {
 	}, nil
 }
 
-func (b *Builder) Render(tplPath string, content any) (string, error) {
+// Render renders a template with the given content.
+func (b *Builder) Render(tplPath string, content *RenderContext) (string, error) {
 	bs, err := os.ReadFile(tplPath)
 	if err != nil {
 		return "", err
 	}
 
-	tpl, err := template.New("foo").Funcs(b.getFuncMap()).Option("missingkey=error").Parse(string(bs))
+	tpl, err := template.New(tplPath).Funcs(b.getFuncMap()).Option("missingkey=error").Parse(string(bs))
 
 	if err != nil {
 		return "", err
@@ -54,34 +57,74 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(outPath, []byte(out), 0644)
+	err = os.MkdirAll(filepath.Dir(outPath), 0755)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(outPath, []byte(out), 0755)
 	return err
 }
 
+func (b *Builder) BuildExtraPages() error {
+	var err error
+	for _, tpl := range theme.ExtraPageNames {
+		tplPath := filepath.Join(b.site.ThemeDir, tpl+".html")
+		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
+		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
+
+		if _, err := os.Stat(sourcePath); err == nil {
+			p, err := models.PostFromSource(sourcePath)
+			if err != nil {
+				log.Error("Could not render template", "error", err)
+				return err
+			}
+			b.context.Post = p
+		} else {
+			b.context.Post = nil
+		}
+
+		err = b.BuildOne(tplPath, outPath)
+
+		if err != nil {
+			log.Error("Could not render template", "error", err)
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *Builder) BuildPosts() error {
-	pubPostsDir := filepath.Join(b.site.PublicDir, models.PostsDir)
 	tplPath := filepath.Join(b.site.ThemeDir, "post.html")
-	_, err := os.Stat(pubPostsDir)
+	_, err := os.Stat(b.site.PublicDir)
 	if err != nil {
-		err2 := os.Mkdir(pubPostsDir, 0755)
+		err2 := os.Mkdir(b.site.PublicDir, 0755)
 		if err2 != nil {
 			return err2
 		}
 	}
-	err = filepath.WalkDir(filepath.Join(b.site.SourceDir, models.PostsDir), func(path string, d os.DirEntry, err error) error {
+	err = filepath.WalkDir(b.site.SourceDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
+
+		// name with subdirectories included, leading slash removed
+		subName := strings.TrimPrefix(strings.TrimPrefix(path, b.site.SourceDir), "/")
+
 		if filepath.Ext(d.Name()) != ".md" {
 			// TODO: copy files over?
 			return nil
 		}
-		log.Debug("building post", "file", path, "name", d.Name())
-		plain := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
-		outPath := filepath.Join(pubPostsDir, plain+".html")
+		if theme.IsExtraPage(strings.TrimSuffix(subName, ".md")) {
+			log.Warn("skipping extra page", "page", subName)
+			// skip built-in pages (they are built with the theme)
+			return nil
+		}
+		plain := strings.TrimSuffix(subName, filepath.Ext(d.Name()))
+
+		outPath := filepath.Join(b.site.PublicDir, plain+".html")
 		post, err := models.PostFromSource(path)
 		if err != nil {
 			return err
@@ -91,6 +134,38 @@ func (b *Builder) BuildPosts() error {
 		return b.BuildOne(tplPath, outPath)
 	})
 	return err
+}
+
+func (b *Builder) BuildPostLists() error {
+
+	postCount := len(b.context.Posts)
+	postsPerPage := 5
+
+	pageCount := int(math.Ceil(float64(postCount) / float64(postsPerPage)))
+
+	log.Info("Building post pages", "total pages", pageCount, "total posts", postCount, "posts per page", postsPerPage)
+
+	for pnum := range pageCount {
+		b.context.Page = &models.Page{
+			Number: pnum + 1,
+			Total:  pageCount,
+			Posts:  []*models.Post{},
+		}
+		for i := pnum; i < (pnum+1)*postsPerPage; i++ {
+			if i >= postCount {
+				break
+			}
+			b.context.Page.Posts = append(b.context.Page.Posts, b.context.Posts[i])
+		}
+
+		tplPath := filepath.Join(b.site.ThemeDir, "posts.html")
+		outPath := filepath.Join(b.site.PublicDir, fmt.Sprintf("posts-%d.html", pnum+1))
+		err := b.BuildOne(tplPath, outPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *Builder) checkDirectories() error {
@@ -116,6 +191,7 @@ func (b *Builder) checkDirectories() error {
 	return nil
 }
 
+// BuildAll builds all the pages and posts for the site.
 func (b *Builder) BuildAll() error {
 	log.Info("Building project", "site", b.site.Name)
 
@@ -132,29 +208,14 @@ func (b *Builder) BuildAll() error {
 	}
 
 	// build pages
-	for _, tpl := range []string{"index", "about"} {
-		tplPath := filepath.Join(b.site.ThemeDir, tpl+".html")
-		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
-		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
-
-		if _, err := os.Stat(sourcePath); err == nil {
-			p, err := models.PostFromSource(sourcePath)
-			if err != nil {
-				log.Error("Could not render template", "error", err)
-				return err
-			}
-			b.context.Post = p
-		} else {
-			b.context.Post = nil
-		}
-
-		err = b.BuildOne(tplPath, outPath)
-
-		if err != nil {
-			log.Error("Could not render template", "error", err)
-			return err
-		}
+	err = b.BuildExtraPages()
+	if err != nil {
+		return err
 	}
 
+	err = b.BuildPostLists()
+	if err != nil {
+		return err
+	}
 	return nil
 }

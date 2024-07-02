@@ -1,7 +1,11 @@
 {{ tpl "header" }}
 
 <body>
+    {{ if .Post }}
     {{ .Post.Body }}
+    {{ else }}
+    <h1>Search</h1>
+    {{ end }}
 </body>
 
 {{ tpl "footer" }}

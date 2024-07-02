@@ -1,17 +1,14 @@
-<html>
-
-<head>
-    <title>About {{ .Site.Name }}</title>
-</head>
+{{ tpl "header" }}
 
 <body>
     <h1>About {{ .Site.Name }}</h1>
 
     {{ if .Post }}
+    <h1>GOT A POST</h1>
     {{ .Post.Body }}
     {{ end }}
 
     {{ tpl "foo" "Name" "one" "Src" "http://foo" }}
 </body>
 
-</html>
+{{ tpl "footer" }}

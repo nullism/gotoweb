@@ -24,7 +24,7 @@ func PostFromSource(sourcePath string) (*Post, error) {
 	p := parser.NewWithExtensions(extensions)
 	doc := p.Parse(bs)
 
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	htmlFlags := html.CommonFlags
 	renderer := html.NewRenderer(html.RendererOptions{Flags: htmlFlags})
 	htmlBytes := markdown.Render(doc, renderer)
 

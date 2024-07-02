@@ -3,6 +3,8 @@ name: Gotoweb Documentation
 theme_directory: ../themes/base/
 public_directory: public
 
+copyright: "2024 Gotoweb"
+
 theme:
   name: default
 

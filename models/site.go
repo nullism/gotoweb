@@ -14,6 +14,7 @@ var log = logging.GetLogger()
 type SiteConfig struct {
 	Name       string
 	Theme      ThemeConfig
+	Copyright  string
 	ConfigPath string // path to config.yaml
 	PublicDir  string
 	RootDir    string
