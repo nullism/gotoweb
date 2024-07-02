@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/models"
@@ -33,24 +32,6 @@ func New(conf *models.SiteConfig) (*Builder, error) {
 	}, nil
 }
 
-// Render renders a template with the given content.
-func (b *Builder) Render(tplPath string, content *RenderContext) (string, error) {
-	bs, err := os.ReadFile(tplPath)
-	if err != nil {
-		return "", err
-	}
-
-	tpl, err := template.New(tplPath).Funcs(b.getFuncMap()).Option("missingkey=error").Parse(string(bs))
-
-	if err != nil {
-		return "", err
-	}
-
-	sb := strings.Builder{}
-	err = tpl.Execute(&sb, content)
-	return sb.String(), err
-}
-
 func (b *Builder) BuildOne(tplPath, outPath string) error {
 	log.Debug("building "+filepath.Base(outPath), "from", tplPath, "to", outPath)
 	out, err := b.Render(tplPath, b.context)
@@ -73,7 +54,7 @@ func (b *Builder) BuildExtraPages() error {
 		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
 
 		if _, err := os.Stat(sourcePath); err == nil {
-			p, err := models.PostFromSource(sourcePath)
+			p, err := b.postFromSource(sourcePath)
 			if err != nil {
 				log.Error("Could not render template", "error", err)
 				return err
@@ -125,7 +106,7 @@ func (b *Builder) BuildPosts() error {
 		plain := strings.TrimSuffix(subName, filepath.Ext(d.Name()))
 
 		outPath := filepath.Join(b.site.PublicDir, plain+".html")
-		post, err := models.PostFromSource(path)
+		post, err := b.postFromSource(path)
 		if err != nil {
 			return err
 		}

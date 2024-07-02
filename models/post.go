@@ -2,6 +2,8 @@ package models
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -9,10 +11,9 @@ import (
 )
 
 type Post struct {
-	Title      string
-	Body       string
-	SourcePath string
-	DestPath   string
+	Title string
+	Body  string
+	Href  string
 }
 
 func PostFromSource(sourcePath string) (*Post, error) {
@@ -20,7 +21,7 @@ func PostFromSource(sourcePath string) (*Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock | parser.Tables
 	p := parser.NewWithExtensions(extensions)
 	doc := p.Parse(bs)
 
@@ -28,5 +29,7 @@ func PostFromSource(sourcePath string) (*Post, error) {
 	renderer := html.NewRenderer(html.RendererOptions{Flags: htmlFlags})
 	htmlBytes := markdown.Render(doc, renderer)
 
-	return &Post{Title: "unimplemented", Body: string(htmlBytes)}, nil
+	title := filepath.Base(strings.TrimSuffix(sourcePath, ".md"))
+
+	return &Post{Title: title, Body: string(htmlBytes)}, nil
 }

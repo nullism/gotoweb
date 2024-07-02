@@ -12,7 +12,17 @@ func (b *Builder) getFuncMap() map[string]any {
 	return map[string]any{
 		"tpl": b.tpl,
 		"map": b.toMap,
+		"sub": b.sub,
+		"add": b.add,
 	}
+}
+
+func (b *Builder) add(num, amount int) int {
+	return num + amount
+}
+
+func (b *Builder) sub(num, amount int) int {
+	return num - amount
 }
 
 func (b *Builder) tpl(name string, pairs ...any) (string, error) {

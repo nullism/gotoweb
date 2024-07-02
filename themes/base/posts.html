@@ -1,14 +1,18 @@
 {{ tpl "header" }}
 
-<body>
-    <h1>Posts</h1>
-    {{ range .Page.Posts }}
-    <h2>{{ .Title }}</h2>
-    <p>{{ .Body }}</p>
-    {{ end }}
+<h1>Posts</h1>
+{{ range .Page.Posts }}
+<h2><a href="{{.Href}}">{{ .Title }}</a></h2>
+<p>{{ .Body }}</p>
+{{ end }}
 
-    {{ if lt .Page.Number .Page.Total }}
-    <a href="posts-{{ .Page.Number + 1 }}.html">Next</a>
-</body>
+{{ if lt .Page.Number .Page.Total }}
+
+<a href="posts-{{ add .Page.Number 1 }}.html">Next</a>
+{{ end }}
+
+{{ if gt .Page.Number 1 }}
+<a href="posts-{{ sub .Page.Number 1 }}.html">Previous</a>
+{{ end }}
 
 {{ tpl "footer" }}
