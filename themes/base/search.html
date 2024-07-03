@@ -6,4 +6,27 @@
 <h1>Search</h1>
 {{ end }}
 
+<script>
+    function submitSearch() {
+        var searchText = document.getElementById("search-text").value
+        var searchResults = document.getElementById("search-results")
+        searchResults.innerHTML = ""
+        var hits = search(searchText)
+        for (var i = 0; i < hits.length; i++) {
+            var link = document.createElement("a")
+            link.href = hits[i].href
+            link.textContent = hits[i].title
+            searchResults.appendChild(link)
+            searchResults.appendChild(document.createElement("br"))
+        }
+    }
+</script>
+
+<div>
+    <input type="text" id="search-text" placeholder="Search" />
+    <button id="search-button" onclick="submitSearch()">Search</button>
+</div>
+
+<div id="search-results"></div>
+
 {{ tpl "footer" }}

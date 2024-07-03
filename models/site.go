@@ -20,6 +20,7 @@ type SiteConfig struct {
 	RootDir    string
 	SourceDir  string
 	ThemeDir   string `yaml:"theme_directory"`
+	Prefix     string `yaml:"uri_prefix"`
 }
 
 func SiteFromConfig() (*SiteConfig, error) {

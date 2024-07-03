@@ -4,11 +4,13 @@
     <title>
         {{ if .Post }}{{ .Post.Title }}{{ else }}{{ .Site.Name }}{{ end }}
     </title>
+    <!-- include search.js -->
+    <script src="{{.Site.Prefix}}/dist/search.js"></script>
 </head>
 
 <body>
     <div>
-        <a href="/">Home</a>
-        <a href="/about.html">About</a>
-        <a href="/posts-1.html">Posts</a>
+        <a href="{{.Site.Prefix}}/">Home</a>
+        <a href="{{.Site.Prefix}}/about.html">About</a>
+        <a href="{{.Site.Prefix}}/posts-1.html">Posts</a>
     </div>

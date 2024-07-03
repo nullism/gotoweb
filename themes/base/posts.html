@@ -6,13 +6,16 @@
 <p>{{ .Body }}</p>
 {{ end }}
 
-{{ if lt .Page.Number .Page.Total }}
 
-<a href="posts-{{ add .Page.Number 1 }}.html">Next</a>
-{{ end }}
 
 {{ if gt .Page.Number 1 }}
 <a href="posts-{{ sub .Page.Number 1 }}.html">Previous</a>
+{{ end }}
+
+<b>{{ .Page.Number }}</b> of <b>{{ .Page.Total }}</b>
+
+{{ if lt .Page.Number .Page.Total }}
+<a href="posts-{{ add .Page.Number 1 }}.html">Next</a>
 {{ end }}
 
 {{ tpl "footer" }}

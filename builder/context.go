@@ -4,9 +4,9 @@ import "github.com/nullism/gotoweb/models"
 
 type RenderContext struct {
 	Site  *models.SiteConfig
-	Post  *models.Post
-	Posts []*models.Post
-	Page  *models.Page
+	Post  *Post
+	Posts []*Post
+	Page  *Page
 	Args  map[string]any
 }
 

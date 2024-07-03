@@ -1,4 +1,4 @@
-package models
+package builder
 
 type Page struct {
 	Posts  []*Post

@@ -9,6 +9,7 @@ import (
 
 	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/models"
+	"github.com/nullism/gotoweb/search"
 	"github.com/nullism/gotoweb/theme"
 )
 
@@ -17,6 +18,7 @@ var log = logging.GetLogger()
 type Builder struct {
 	site    *models.SiteConfig
 	context *RenderContext
+	search  *search.Search
 }
 
 func New(conf *models.SiteConfig) (*Builder, error) {
@@ -24,11 +26,14 @@ func New(conf *models.SiteConfig) (*Builder, error) {
 		return nil, err
 	}
 	log.Info("Creating builder", "source", conf.SourceDir)
+	s := search.New()
+
 	return &Builder{
 		site: conf,
 		context: &RenderContext{
 			Site: conf,
 		},
+		search: s,
 	}, nil
 }
 
@@ -43,6 +48,12 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 		return err
 	}
 	err = os.WriteFile(outPath, []byte(out), 0755)
+	if err != nil {
+		return err
+	}
+	if b.context.Post != nil {
+		err = b.search.Index(b.context.Post.Href, b.context.Post.Title, b.context.Post.Body, b.context.Post.Tags)
+	}
 	return err
 }
 
@@ -120,17 +131,17 @@ func (b *Builder) BuildPosts() error {
 func (b *Builder) BuildPostLists() error {
 
 	postCount := len(b.context.Posts)
-	postsPerPage := 5
+	postsPerPage := 1
 
 	pageCount := int(math.Ceil(float64(postCount) / float64(postsPerPage)))
 
 	log.Info("Building post pages", "total pages", pageCount, "total posts", postCount, "posts per page", postsPerPage)
 
 	for pnum := range pageCount {
-		b.context.Page = &models.Page{
+		b.context.Page = &Page{
 			Number: pnum + 1,
 			Total:  pageCount,
-			Posts:  []*models.Post{},
+			Posts:  []*Post{},
 		}
 		for i := pnum; i < (pnum+1)*postsPerPage; i++ {
 			if i >= postCount {
@@ -198,5 +209,13 @@ func (b *Builder) BuildAll() error {
 	if err != nil {
 		return err
 	}
+	idx, err := b.search.ToJson()
+	if err != nil {
+		return err
+	}
+
+	os.WriteFile(filepath.Join(b.site.PublicDir, "index.json"), idx, 0755)
+
+	println(string(idx))
 	return nil
 }
