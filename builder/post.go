@@ -64,7 +64,7 @@ func (b *Builder) postFromSource(sourcePath string) (*Post, error) {
 		markdown: string(bs),
 	}
 
-	href := strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1)
+	href := b.site.Prefix + strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1)
 	post.Href = href
 	return post, err
 }

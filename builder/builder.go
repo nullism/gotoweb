@@ -11,6 +11,7 @@ import (
 	"github.com/nullism/gotoweb/models"
 	"github.com/nullism/gotoweb/search"
 	"github.com/nullism/gotoweb/theme"
+	cp "github.com/otiai10/copy"
 )
 
 var log = logging.GetLogger()
@@ -214,8 +215,12 @@ func (b *Builder) BuildAll() error {
 		return err
 	}
 
-	os.WriteFile(filepath.Join(b.site.PublicDir, "index.json"), idx, 0755)
+	err = os.WriteFile(filepath.Join(b.site.PublicDir, "index.json"), idx, 0755)
+	if err != nil {
+		return err
+	}
+	err = cp.Copy(filepath.Join(b.site.ThemeDir, "dist"), filepath.Join(b.site.PublicDir, "dist"), cp.Options{AddPermission: 0755})
 
 	println(string(idx))
-	return nil
+	return err
 }

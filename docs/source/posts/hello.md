@@ -1,4 +1,4 @@
-title: Hello There
+title: Hello
 tags: [random]
 
 

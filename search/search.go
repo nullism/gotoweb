@@ -19,10 +19,11 @@ type Search struct {
 }
 
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
+var wordRe = regexp.MustCompile(`\w+`)
 
 func New() *Search {
 	return &Search{
-		CurrentId:  0,
+		CurrentId:  1,
 		DocMap:     make(map[int]Document),
 		TagMap:     make(map[string][]int),
 		KeywordMap: make(map[string][]int),
@@ -40,12 +41,21 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 	}
 
 	body = htmlTagRe.ReplaceAllString(body, " ")
-	words := regexp.MustCompile(`\w+`).FindAllString(body+" "+title, -1)
+	titleWords := wordRe.FindAllString(title, -1)
+	for _, w := range titleWords {
+		if len(w) < 3 {
+			continue
+		}
+		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
+		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
+	}
+
+	words := wordRe.FindAllString(body, -1)
 	for _, w := range words {
 		if len(w) < 3 {
 			continue
 		}
-		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[w], s.CurrentId)
+		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
 	}
 
 	s.CurrentId++
