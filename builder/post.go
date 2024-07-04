@@ -24,14 +24,7 @@ type Post struct {
 	markdown    string
 }
 
-type postConfig struct {
-	Title string
-	Tags  []string
-}
-
-// postRe is a real mess. It grabs the yaml block, then a random newline (non-greedy), then the separator, then the rest of the file.
-// var postRe = regexp.MustCompile(`(?m)((.|\r?\n)*?)(^<![-]+\s+[-]+>$)((.|\r?\n)*)`)
-
+// postRe requires the start (---) to be on the first line.
 var postRe = regexp.MustCompile(`(?m)([ -~\n]*?)^---$((.|\r?\n)*?)^---$((.|\r?\n)*)`)
 
 func parsePostConfig(post *Post, body []byte) (*Post, []byte, error) {

@@ -3,7 +3,20 @@ package builder
 import (
 	"reflect"
 	"testing"
+
+	"github.com/nullism/gotoweb/config"
+	"github.com/stretchr/testify/assert"
 )
+
+func Test_postFromBytes(t *testing.T) {
+	path := "/foo/test.md"
+	bytes := []byte("---\ntitle: test\n---\nHello World")
+	b := &Builder{site: &config.SiteConfig{SourceDir: "/foo"}}
+	post, err := b.postFromBytes(bytes, path)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, post)
+	assert.Equal(t, "test", post.Title)
+}
 
 func Test_parsePostConfig(t *testing.T) {
 
