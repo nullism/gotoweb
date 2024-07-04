@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/nullism/gotoweb/models"
+	"github.com/nullism/gotoweb/config"
 )
 
 func (b *Builder) getFuncMap() map[string]any {
@@ -30,7 +30,7 @@ func (b *Builder) tpl(name string, pairs ...any) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := filepath.Join(b.site.ThemeDir, models.HelpersDir, name+".html")
+	path := filepath.Join(b.site.ThemeDir(), config.HelpersDir, name+".html")
 	b.context.Args = m
 	return b.Render(path, b.context)
 }

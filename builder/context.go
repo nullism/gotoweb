@@ -1,9 +1,9 @@
 package builder
 
-import "github.com/nullism/gotoweb/models"
+import "github.com/nullism/gotoweb/config"
 
 type RenderContext struct {
-	Site  *models.SiteConfig
+	Site  *config.SiteConfig
 	Post  *Post
 	Posts []*Post
 	Page  *Page

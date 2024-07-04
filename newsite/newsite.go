@@ -1,10 +1,10 @@
 package newsite
 
-import "github.com/nullism/gotoweb/models"
+import "github.com/nullism/gotoweb/config"
 
 type NewSite struct {
 	Name string
-	conf models.SiteConfig
+	conf config.SiteConfig
 }
 
 func New(name string) (*NewSite, error) {

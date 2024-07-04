@@ -1,4 +1,4 @@
-package models
+package config
 
 const ConfigFile = "config.yaml"
 const PublicDir = "public"

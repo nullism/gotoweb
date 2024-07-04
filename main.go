@@ -5,8 +5,8 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/nullism/gotoweb/builder"
+	"github.com/nullism/gotoweb/config"
 	"github.com/nullism/gotoweb/logging"
-	"github.com/nullism/gotoweb/models"
 	"github.com/nullism/gotoweb/newsite"
 )
 
@@ -42,7 +42,7 @@ func main() {
 		}
 		println("New command " + ns.Name)
 	case "build":
-		conf, err := models.SiteFromConfig()
+		conf, err := config.SiteFromConfig()
 		if err != nil {
 			panic(err)
 		}

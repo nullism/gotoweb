@@ -1,3 +1,7 @@
+---
+title: Hello 2
+---
+
 # Hello from
 
 Hello number 2

@@ -12,10 +12,11 @@ type Document struct {
 }
 
 type Search struct {
-	CurrentId  int              `json:"i"`
-	KeywordMap map[string][]int `json:"idx"`
-	TagMap     map[string][]int `json:"tags"`
-	DocMap     map[int]Document `json:"docs"`
+	CurrentId  int                    `json:"i"`
+	KeywordMap map[string][]int       `json:"idx"`
+	KwMap      map[string]map[int]int `json:"kw"`
+	TagMap     map[string][]int       `json:"tags"`
+	DocMap     map[int]Document       `json:"docs"`
 }
 
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
@@ -27,6 +28,7 @@ func New() *Search {
 		DocMap:     make(map[int]Document),
 		TagMap:     make(map[string][]int),
 		KeywordMap: make(map[string][]int),
+		KwMap:      make(map[string]map[int]int),
 	}
 }
 
@@ -46,8 +48,13 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 		if len(w) < 3 {
 			continue
 		}
-		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
-		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
+		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
+			s.KwMap[strings.ToLower(w)] = make(map[int]int)
+		}
+		s.KwMap[strings.ToLower(w)][s.CurrentId] += 2
+
+		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
+		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
 	}
 
 	words := wordRe.FindAllString(body, -1)
@@ -55,7 +62,12 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 		if len(w) < 3 {
 			continue
 		}
-		s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
+		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
+			s.KwMap[strings.ToLower(w)] = make(map[int]int)
+		}
+		s.KwMap[strings.ToLower(w)][s.CurrentId] += 1
+
+		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
 	}
 
 	s.CurrentId++

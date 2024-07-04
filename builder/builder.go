@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/nullism/gotoweb/config"
 	"github.com/nullism/gotoweb/logging"
-	"github.com/nullism/gotoweb/models"
 	"github.com/nullism/gotoweb/search"
 	"github.com/nullism/gotoweb/theme"
 	cp "github.com/otiai10/copy"
@@ -17,12 +17,12 @@ import (
 var log = logging.GetLogger()
 
 type Builder struct {
-	site    *models.SiteConfig
+	site    *config.SiteConfig
 	context *RenderContext
 	search  *search.Search
 }
 
-func New(conf *models.SiteConfig) (*Builder, error) {
+func New(conf *config.SiteConfig) (*Builder, error) {
 	if _, err := os.Stat(conf.SourceDir); err != nil {
 		return nil, err
 	}
@@ -39,6 +39,12 @@ func New(conf *models.SiteConfig) (*Builder, error) {
 }
 
 func (b *Builder) BuildOne(tplPath, outPath string) error {
+
+	if b.context.Post != nil && b.context.Post.SkipPublish {
+		log.Warn("post is marked as skip publish", "title", b.context.Post.Title)
+		return nil
+	}
+
 	log.Debug("building "+filepath.Base(outPath), "from", tplPath, "to", outPath)
 	out, err := b.Render(tplPath, b.context)
 	if err != nil {
@@ -52,7 +58,7 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 	if err != nil {
 		return err
 	}
-	if b.context.Post != nil {
+	if b.context.Post != nil && !b.context.Post.SkipIndex {
 		err = b.search.Index(b.context.Post.Href, b.context.Post.Title, b.context.Post.Body, b.context.Post.Tags)
 	}
 	return err
@@ -61,7 +67,7 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 func (b *Builder) BuildExtraPages() error {
 	var err error
 	for _, tpl := range theme.ExtraPageNames {
-		tplPath := filepath.Join(b.site.ThemeDir, tpl+".html")
+		tplPath := filepath.Join(b.site.ThemeDir(), tpl+".html")
 		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
 		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
 
@@ -87,7 +93,7 @@ func (b *Builder) BuildExtraPages() error {
 }
 
 func (b *Builder) BuildPosts() error {
-	tplPath := filepath.Join(b.site.ThemeDir, "post.html")
+	tplPath := filepath.Join(b.site.ThemeDir(), "post.html")
 	_, err := os.Stat(b.site.PublicDir)
 	if err != nil {
 		err2 := os.Mkdir(b.site.PublicDir, 0755)
@@ -110,17 +116,20 @@ func (b *Builder) BuildPosts() error {
 			// TODO: copy files over?
 			return nil
 		}
-		if theme.IsExtraPage(strings.TrimSuffix(subName, ".md")) {
-			log.Warn("skipping extra page", "page", subName)
-			// skip built-in pages (they are built with the theme)
-			return nil
-		}
+		// if theme.IsExtraPage(strings.TrimSuffix(subName, ".md")) {
+		// 	log.Warn("skipping extra page", "page", subName)
+		// 	// skip built-in pages (they are built with the theme)
+		// 	return nil
+		// }
 		plain := strings.TrimSuffix(subName, filepath.Ext(d.Name()))
 
 		outPath := filepath.Join(b.site.PublicDir, plain+".html")
 		post, err := b.postFromSource(path)
 		if err != nil {
 			return err
+		}
+		if post.SkipPublish {
+			return nil
 		}
 		b.context.Post = post
 		b.context.Posts = append(b.context.Posts, post)
@@ -151,7 +160,7 @@ func (b *Builder) BuildPostLists() error {
 			b.context.Page.Posts = append(b.context.Page.Posts, b.context.Posts[i])
 		}
 
-		tplPath := filepath.Join(b.site.ThemeDir, "posts.html")
+		tplPath := filepath.Join(b.site.ThemeDir(), "posts.html")
 		outPath := filepath.Join(b.site.PublicDir, fmt.Sprintf("posts-%d.html", pnum+1))
 		err := b.BuildOne(tplPath, outPath)
 		if err != nil {
@@ -161,34 +170,17 @@ func (b *Builder) BuildPostLists() error {
 	return nil
 }
 
-func (b *Builder) checkDirectories() error {
-	// Source directory
-	sd, err := os.Stat(b.site.SourceDir)
-	if err != nil || !sd.IsDir() {
-		log.Error("source directory inaccessible", "directory", b.site.SourceDir)
+// BuildAll builds all the pages and posts for the site.
+func (b *Builder) BuildAll() error {
+	log.Info("building project", "site", b.site.Name)
+
+	err := b.RemovePublic()
+	if err != nil {
+		log.Error("could not clean public directory", "error", err)
 		return err
 	}
 
-	// Public directory
-	pd, err := os.Stat(b.site.PublicDir)
-	if err != nil {
-		err2 := os.Mkdir(b.site.PublicDir, 0755)
-		if err2 != nil {
-			log.Error("could not stat or create public directory", "directory", b.site.PublicDir, "mkdir error", err2, "error", err)
-			return err2
-		}
-	} else if !pd.IsDir() {
-		log.Error("public exists and is not a directory", "directory", b.site.PublicDir)
-		return fmt.Errorf("public exists and is not a directory")
-	}
-	return nil
-}
-
-// BuildAll builds all the pages and posts for the site.
-func (b *Builder) BuildAll() error {
-	log.Info("Building project", "site", b.site.Name)
-
-	err := b.checkDirectories()
+	err = b.CheckDirectories()
 	if err != nil {
 		log.Error("directory check failed", "error", err)
 		return err
@@ -210,17 +202,20 @@ func (b *Builder) BuildAll() error {
 	if err != nil {
 		return err
 	}
+
+	idxPath := filepath.Join(b.site.PublicDir, "index.json")
+	log.Info("writing search index", "outfile", idxPath)
 	idx, err := b.search.ToJson()
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(filepath.Join(b.site.PublicDir, "index.json"), idx, 0755)
+	err = os.WriteFile(idxPath, idx, 0755)
 	if err != nil {
 		return err
 	}
-	err = cp.Copy(filepath.Join(b.site.ThemeDir, "dist"), filepath.Join(b.site.PublicDir, "dist"), cp.Options{AddPermission: 0755})
+	err = cp.Copy(filepath.Join(b.site.ThemeDir(), "dist"), filepath.Join(b.site.PublicDir, "dist"), cp.Options{AddPermission: 0755})
 
-	println(string(idx))
+	// println(string(idx))
 	return err
 }

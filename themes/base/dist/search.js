@@ -18,25 +18,28 @@ function search(query) {
   console.log("parts are ", parts)
   console.log("query is ", query)
 
-  var hitIds = []
+
+  var hitMap = {}
   for (var p of parts) {
-    if (indexData.idx[p] !== undefined) {
-      hitIds.push(...indexData.idx[p])
+    const pmap = indexData.kw[p]
+    if (pmap === undefined) {
+      continue // no hits
+    }
+    for (const pid of Object.keys(pmap)) {
+      if (hitMap[pid] === undefined) {
+        hitMap[pid] = 0
+      }
+      hitMap[pid] += pmap[pid]
     }
   }
 
-  console.log("hitIds are ", hitIds)
+  console.log("hitMap is ", hitMap)
 
-  const countMap = hitIds.reduce((acc, val) => {
-    acc[val] = (acc[val] || 0) + 1
-    return acc
-  }, {})
 
-  console.log("countMap is ", countMap)
-  var sortedHitIds = Object.keys(countMap).sort(function (a, b) {
-    return countMap[b] - countMap[a]
+  var sortedHitIds = Object.keys(hitMap).sort(function (a, b) {
+    return hitMap[b] - hitMap[a]
   })
-  console.log("newTypesArray is ", sortedHitIds)
+  console.log("sortedHitIds is ", sortedHitIds)
 
   var hits = []
   for (var i = 0; i < sortedHitIds.length; i++) {

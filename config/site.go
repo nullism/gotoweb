@@ -1,4 +1,4 @@
-package models
+package config
 
 import (
 	"fmt"
@@ -19,8 +19,14 @@ type SiteConfig struct {
 	PublicDir  string
 	RootDir    string
 	SourceDir  string
-	ThemeDir   string `yaml:"theme_directory"`
-	Prefix     string `yaml:"uri_prefix"`
+	// ThemeDir   string `yaml:"theme_directory,ignore"`
+	Prefix  string `yaml:"uri_prefix"`
+	Search  SearchConfig
+	Version string
+}
+
+func (s SiteConfig) ThemeDir() string {
+	return filepath.Join(s.RootDir, s.Theme.Path)
 }
 
 func SiteFromConfig() (*SiteConfig, error) {
@@ -38,17 +44,21 @@ func SiteFromConfig() (*SiteConfig, error) {
 		return nil, fmt.Errorf("could not unmarshal config: %w", err)
 	}
 
+	if sc.Version == "" {
+		return nil, fmt.Errorf("config version not set")
+	}
+
 	sc.ConfigPath = confPath
 	sc.RootDir = filepath.Dir(confPath)
 	sc.SourceDir = filepath.Join(sc.RootDir, SourceDir)
-	if sc.ThemeDir == "" {
-		tp := filepath.Join(sc.RootDir, ThemesDir, sc.Theme.Name)
-		sc.ThemeDir = tp
-	} else if !filepath.IsAbs(sc.ThemeDir) {
-		// make it absolute and preserve relative paths, e.g /root/../../themes/foo
-		td := filepath.Join(sc.RootDir, sc.ThemeDir)
-		sc.ThemeDir = td
-	}
+	// if sc.ThemeDir == "" {
+	// 	tp := filepath.Join(sc.RootDir, ThemesDir, sc.Theme.Path)
+	// 	sc.ThemeDir = tp
+	// } else if !filepath.IsAbs(sc.ThemeDir) {
+	// 	// make it absolute and preserve relative paths, e.g /root/../../themes/foo
+	// 	td := filepath.Join(sc.RootDir, sc.ThemeDir)
+	// 	sc.ThemeDir = td
+	// }
 
 	if sc.PublicDir == "" {
 		sd := filepath.Join(sc.RootDir, PublicDir)

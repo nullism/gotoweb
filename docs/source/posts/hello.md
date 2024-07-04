@@ -1,8 +1,7 @@
+---
 title: Hello
 tags: [random]
-
-
-<!-- -->
+---
 
 # HELLO!
 

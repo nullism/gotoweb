@@ -1,7 +1,7 @@
-package models
+package config
 
 type ThemeConfig struct {
-	Name string
+	Path string
 	Args map[string]any
 }
 
