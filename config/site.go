@@ -16,6 +16,7 @@ type SiteConfig struct {
 	Theme      ThemeConfig
 	Copyright  string
 	ConfigPath string // path to config.yaml
+	Index      IndexConfig
 	PublicDir  string
 	RootDir    string
 	SourceDir  string
@@ -46,6 +47,10 @@ func SiteFromConfig() (*SiteConfig, error) {
 
 	if sc.Version == "" {
 		return nil, fmt.Errorf("config version not set")
+	}
+
+	if sc.Index.MinKeywordLength == 0 {
+		sc.Index.MinKeywordLength = 3
 	}
 
 	sc.ConfigPath = confPath

@@ -67,7 +67,7 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 func (b *Builder) BuildExtraPages() error {
 	var err error
 	for _, tpl := range theme.ExtraPageNames {
-		tplPath := filepath.Join(b.site.ThemeDir(), tpl+".html")
+		tplPath := filepath.Join(b.site.ThemeDir(), tpl+config.TemplateExt)
 		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
 		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
 

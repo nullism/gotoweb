@@ -8,6 +8,18 @@ function loadIndex() {
     })
 }
 
+function tagged(tag) {
+  const t = indexData.tm[tag]
+  if (t === undefined) {
+    return []
+  }
+  var hits = []
+  for (const id of t) {
+    hits.push(indexData.docs[id])
+  }
+  return hits
+}
+
 function search(query) {
 
   query = query.toLowerCase()

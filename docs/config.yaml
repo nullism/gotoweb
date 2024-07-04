@@ -6,6 +6,10 @@ name: Gotoweb Documentation
 copyright: "2024 Gotoweb"
 version: 1
 
+index:
+  min_keyword_length: 3
+  stopwords: ["the", "and", "how"]
+
 theme:
   path: ../themes/base
 

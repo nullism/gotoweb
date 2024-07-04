@@ -1,0 +1,3 @@
+{{ range $idx, $tag := .Post.Tags }}
+<a href="{{ $.Site.Prefix }}/search.html?tag={{$tag}}">{{$tag}}</a>
+{{ end }}

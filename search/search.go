@@ -7,16 +7,16 @@ import (
 )
 
 type Document struct {
-	Href  string `json:"href"`
-	Title string `json:"title"`
+	Href  string   `json:"href"`
+	Title string   `json:"title"`
+	Tags  []string `json:"tags"`
 }
 
 type Search struct {
-	CurrentId  int                    `json:"i"`
-	KeywordMap map[string][]int       `json:"idx"`
-	KwMap      map[string]map[int]int `json:"kw"`
-	TagMap     map[string][]int       `json:"tags"`
-	DocMap     map[int]Document       `json:"docs"`
+	CurrentId int                    `json:"i"`
+	KwMap     map[string]map[int]int `json:"kw"`
+	TagMap    map[string][]int       `json:"tm"`
+	DocMap    map[int]Document       `json:"docs"`
 }
 
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
@@ -24,11 +24,10 @@ var wordRe = regexp.MustCompile(`\w+`)
 
 func New() *Search {
 	return &Search{
-		CurrentId:  1,
-		DocMap:     make(map[int]Document),
-		TagMap:     make(map[string][]int),
-		KeywordMap: make(map[string][]int),
-		KwMap:      make(map[string]map[int]int),
+		CurrentId: 1,
+		DocMap:    make(map[int]Document),
+		TagMap:    make(map[string][]int),
+		KwMap:     make(map[string]map[int]int),
 	}
 }
 
@@ -52,6 +51,7 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 	s.DocMap[id] = Document{
 		Href:  href,
 		Title: title,
+		Tags:  tags,
 	}
 
 	for _, tag := range tags {

@@ -6,9 +6,14 @@
 <h1>Search</h1>
 {{ end }}
 
+
 <script>
+    const kwminlen = {{.Site.Index.MinKeywordLength}};
     function submitSearch() {
         var searchText = document.getElementById("search-text").value
+        if (searchText.length <= kwminlen) {
+            return
+        }
         var searchResults = document.getElementById("search-results")
         searchResults.innerHTML = ""
         var hits = search(searchText)

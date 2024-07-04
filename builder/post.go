@@ -23,7 +23,7 @@ type Post struct {
 	markdown    string
 }
 
-type PostConfig struct {
+type postConfig struct {
 	Title string
 	Tags  []string
 }

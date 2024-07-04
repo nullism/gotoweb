@@ -1,6 +1,5 @@
 ---
 title: Lorem Ipsum
-skip_publish: true
 tags: [lorem, ipsum, fake]
 ---
 
