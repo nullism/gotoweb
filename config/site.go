@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/creasty/defaults"
 	"github.com/nullism/gotoweb/logging"
 	"gopkg.in/yaml.v3"
 )
@@ -21,9 +22,10 @@ type SiteConfig struct {
 	RootDir    string
 	SourceDir  string
 	// ThemeDir   string `yaml:"theme_directory,ignore"`
-	Prefix  string `yaml:"uri_prefix"`
-	Search  SearchConfig
-	Version string
+	Prefix       string `yaml:"uri_prefix"`
+	Search       SearchConfig
+	Version      string
+	PostsPerPage int `default:"2"`
 }
 
 func (s SiteConfig) ThemeDir() string {
@@ -41,8 +43,13 @@ func SiteFromConfig() (*SiteConfig, error) {
 	}
 	var sc SiteConfig
 	err = yaml.Unmarshal(bs, &sc)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal config: %w", err)
+	}
+	err = defaults.Set(&sc)
+	if err != nil {
+		return nil, fmt.Errorf("could not set defaults: %w", err)
 	}
 
 	if sc.Version == "" {

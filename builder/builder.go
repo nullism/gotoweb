@@ -158,23 +158,24 @@ func (b *Builder) BuildPosts() error {
 func (b *Builder) BuildPostLists() error {
 
 	postCount := len(b.context.Posts)
-	postsPerPage := 1
+	postsPerPage := b.site.PostsPerPage
 
 	pageCount := int(math.Ceil(float64(postCount) / float64(postsPerPage)))
 
-	log.Info("Building post pages", "total pages", pageCount, "total posts", postCount, "posts per page", postsPerPage)
-
+	log.Info("Building post pages", "posts per page", postsPerPage, "total pages", pageCount, "total posts", postCount)
+	postI := 0
 	for pnum := range pageCount {
 		b.context.Page = &Page{
 			Number: pnum + 1,
 			Total:  pageCount,
 			Posts:  []*Post{},
 		}
-		for i := pnum; i < (pnum+1)*postsPerPage; i++ {
-			if i >= postCount {
+		for i := 0; i < postsPerPage; i++ {
+			if postI >= postCount {
 				break
 			}
-			b.context.Page.Posts = append(b.context.Page.Posts, b.context.Posts[i])
+			b.context.Page.Posts = append(b.context.Page.Posts, b.context.Posts[postI])
+			postI++
 		}
 
 		tplPath := filepath.Join(b.site.ThemeDir(), "posts.html")
