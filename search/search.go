@@ -32,14 +32,30 @@ func New() *Search {
 	}
 }
 
+func (s *Search) getIdByHref(href string) int {
+	for id, doc := range s.DocMap {
+		if doc.Href == href {
+			return id
+		}
+	}
+	return -1
+}
+
 func (s *Search) Index(href, title, body string, tags []string) error {
-	s.DocMap[s.CurrentId] = Document{
+	if id := s.getIdByHref(href); id != -1 {
+		println("SKIPPING ", href)
+		return nil // already indexed
+	}
+
+	id := s.CurrentId
+
+	s.DocMap[id] = Document{
 		Href:  href,
 		Title: title,
 	}
 
 	for _, tag := range tags {
-		s.TagMap[tag] = append(s.TagMap[tag], s.CurrentId)
+		s.TagMap[tag] = append(s.TagMap[tag], id)
 	}
 
 	body = htmlTagRe.ReplaceAllString(body, " ")
@@ -51,10 +67,8 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
 			s.KwMap[strings.ToLower(w)] = make(map[int]int)
 		}
-		s.KwMap[strings.ToLower(w)][s.CurrentId] += 2
+		s.KwMap[strings.ToLower(w)][id] += 2
 
-		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
-		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
 	}
 
 	words := wordRe.FindAllString(body, -1)
@@ -65,12 +79,11 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
 			s.KwMap[strings.ToLower(w)] = make(map[int]int)
 		}
-		s.KwMap[strings.ToLower(w)][s.CurrentId] += 1
+		s.KwMap[strings.ToLower(w)][id] += 1
 
-		// s.KeywordMap[strings.ToLower(w)] = append(s.KeywordMap[strings.ToLower(w)], s.CurrentId)
 	}
 
-	s.CurrentId++
+	s.CurrentId += 1
 	return nil
 }
 
