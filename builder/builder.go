@@ -27,7 +27,7 @@ func New(conf *config.SiteConfig) (*Builder, error) {
 		return nil, err
 	}
 	log.Info("Creating builder", "source", conf.SourceDir)
-	s := search.New()
+	s := search.New(conf.Search.MinKeywordLength, conf.Search.StopWords)
 
 	return &Builder{
 		site: conf,
@@ -58,9 +58,7 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 	if err != nil {
 		return err
 	}
-	if b.context.Post != nil && !b.context.Post.SkipIndex {
-		err = b.search.Index(b.context.Post.Href, b.context.Post.Title, b.context.Post.Body, b.context.Post.Tags)
-	}
+
 	return err
 }
 
@@ -90,6 +88,14 @@ func (b *Builder) BuildExtraPages() error {
 		}
 	}
 	return nil
+}
+
+func (b *Builder) BuildPostPreview(outPath string) error {
+	tplPath := filepath.Join(b.site.ThemeDir(), "post-preview"+config.TemplateExt)
+	outPath = outPath + ".preview"
+	err := b.BuildOne(tplPath, outPath)
+	return err
+
 }
 
 func (b *Builder) BuildPosts() error {
@@ -131,9 +137,20 @@ func (b *Builder) BuildPosts() error {
 		if post.SkipPublish {
 			return nil
 		}
+		if !post.SkipIndex {
+			err = b.search.Index(post.Href, post.Title, post.Body, post.Tags)
+			if err != nil {
+				return err
+			}
+		}
 		b.context.Post = post
 		b.context.Posts = append(b.context.Posts, post)
-		return b.BuildOne(tplPath, outPath)
+		err = b.BuildOne(tplPath, outPath)
+		if err != nil {
+			return err
+		}
+		err = b.BuildPostPreview(outPath)
+		return err
 	})
 	return err
 }

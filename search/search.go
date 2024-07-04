@@ -13,21 +13,25 @@ type Document struct {
 }
 
 type Search struct {
-	CurrentId int                    `json:"i"`
-	KwMap     map[string]map[int]int `json:"kw"`
-	TagMap    map[string][]int       `json:"tm"`
-	DocMap    map[int]Document       `json:"docs"`
+	CurrentId      int                    `json:"i"`
+	KwMap          map[string]map[int]int `json:"kw"`
+	TagMap         map[string][]int       `json:"tm"`
+	DocMap         map[int]Document       `json:"docs"`
+	stopwords      []string
+	minKeyworldLen int
 }
 
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
 var wordRe = regexp.MustCompile(`\w+`)
 
-func New() *Search {
+func New(minKeyworldLen int, stopwords []string) *Search {
 	return &Search{
-		CurrentId: 1,
-		DocMap:    make(map[int]Document),
-		TagMap:    make(map[string][]int),
-		KwMap:     make(map[string]map[int]int),
+		CurrentId:      1,
+		DocMap:         make(map[int]Document),
+		TagMap:         make(map[string][]int),
+		KwMap:          make(map[string]map[int]int),
+		stopwords:      stopwords,
+		minKeyworldLen: minKeyworldLen,
 	}
 }
 
@@ -61,7 +65,7 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 	body = htmlTagRe.ReplaceAllString(body, " ")
 	titleWords := wordRe.FindAllString(title, -1)
 	for _, w := range titleWords {
-		if len(w) < 3 {
+		if len(w) < s.minKeyworldLen {
 			continue
 		}
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
@@ -73,7 +77,7 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 
 	words := wordRe.FindAllString(body, -1)
 	for _, w := range words {
-		if len(w) < 3 {
+		if len(w) < s.minKeyworldLen {
 			continue
 		}
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {

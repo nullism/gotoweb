@@ -16,6 +16,7 @@ import (
 type Post struct {
 	Title       string
 	Body        string
+	Blurb       string
 	Href        string
 	Tags        []string
 	SkipIndex   bool `yaml:"skip_index"`

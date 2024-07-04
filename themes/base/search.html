@@ -9,26 +9,39 @@
 
 <script>
     const kwminlen = {{.Site.Index.MinKeywordLength}};
+
+    function loadPreviews(hrefs) {
+        console.log("fetching ", hrefs)
+        fetch(hrefs[0] + ".preview").then(response => response.text()).then(text => {
+            document.getElementById("search-results").insertAdjacentHTML('beforeend', text)
+            if (hrefs.length > 1) {
+                loadPreviews(hrefs.slice(1))
+            }
+        })
+    }
+
     function submitSearch() {
         var searchText = document.getElementById("search-text").value
+        var results = document.getElementById("search-results")
+        results.innerHTML = ""
         if (searchText.length <= kwminlen) {
             return
         }
-        var searchResults = document.getElementById("search-results")
-        searchResults.innerHTML = ""
+
         var hits = search(searchText)
+        var hrefs = []
         for (var i = 0; i < hits.length; i++) {
-            var link = document.createElement("a")
-            link.href = hits[i].href
-            link.textContent = hits[i].title
-            searchResults.appendChild(link)
-            searchResults.appendChild(document.createElement("br"))
+            hrefs.push(hits[i].href)
         }
+        // addDocs(0, hrefs)
+        loadPreviews(hrefs)
+
+
     }
 </script>
 
 <div>
-    <input type="text" id="search-text" onkeyup="submitSearch()" placeholder="Search" />
+    <input type="text" id="search-text" onchange="submitSearch()" placeholder="Search" />
     <button id="search-button" onclick="submitSearch()">Search</button>
 </div>
 

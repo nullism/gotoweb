@@ -1,0 +1,11 @@
+<div>
+    <strong><a href="{{.Site.Prefix}}{{.Post.Href}}">{{ .Post.Title }}</a></strong>
+    <br>
+    {{ range .Post.Tags }}
+    <span>
+        <a href="{{$.Site.Prefix}}/search.html?tag={{.}}">{{.}}</a>
+    </span>
+    {{ end }}
+    <br>
+    {{ .Post.Blurb }}
+</div>
