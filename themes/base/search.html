@@ -10,6 +10,8 @@
 <script>
     const kwminlen = "{{.Site.Index.MinKeywordLength}}"
 
+    var searchTimer = null
+
     function loadPreviews(hrefs) {
         console.log("fetching ", hrefs)
         fetch(hrefs[0] + ".preview").then(response => response.text()).then(text => {
@@ -35,13 +37,17 @@
         }
         // addDocs(0, hrefs)
         loadPreviews(hrefs)
-
-
     }
+
+    function submitSearchDelayed(ms) {
+        clearTimeout(searchTimer)
+        searchTimer = setTimeout(submitSearch, ms)
+    }
+
 </script>
 
 <div>
-    <input type="text" id="search-text" onchange="submitSearch()" placeholder="Search" />
+    <input type="text" id="search-text" onkeyup="submitSearchDelayed(300)" placeholder="Search" />
     <button id="search-button" onclick="submitSearch()">Search</button>
 </div>
 
