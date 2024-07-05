@@ -1,4 +1,5 @@
-name: Default Gotoweb
-description: The default Gotoweb Theme
+name: Base
+description: A bare, minimal theme for Gotoweb development
+  and testing.
 author:
   name: Nullism

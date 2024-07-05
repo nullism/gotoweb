@@ -3,7 +3,6 @@ package builder
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	"github.com/nullism/gotoweb/config"
 )
@@ -30,7 +29,7 @@ func (b *Builder) tpl(name string, pairs ...any) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := filepath.Join(b.site.ThemeDir(), config.HelpersDir, name+config.TemplateExt)
+	path := b.files.Join(b.site.ThemeDir(), config.HelpersDir, name+config.TemplateExt)
 	b.context.Args = m
 	return b.Render(path, b.context)
 }

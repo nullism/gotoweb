@@ -3,7 +3,6 @@ package builder
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -53,7 +52,7 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 	p := parser.NewWithExtensions(extensions)
 
 	post := &Post{}
-	post.Title = filepath.Base(strings.TrimSuffix(sourcePath, ".md"))
+	post.Title = b.files.Base(strings.TrimSuffix(sourcePath, ".md"))
 	post, bs, err = parsePostConfig(post, bs)
 	if err != nil {
 		return nil, err

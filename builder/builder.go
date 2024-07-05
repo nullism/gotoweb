@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/nullism/gotoweb/config"
+	"github.com/nullism/gotoweb/fsys"
 	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/search"
 	"github.com/nullism/gotoweb/theme"
-	cp "github.com/otiai10/copy"
 )
 
 var log = logging.GetLogger()
@@ -20,10 +19,11 @@ type Builder struct {
 	site    *config.SiteConfig
 	context *RenderContext
 	search  *search.Search
+	files   fsys.FileSystem
 }
 
-func New(conf *config.SiteConfig) (*Builder, error) {
-	if _, err := os.Stat(conf.SourceDir); err != nil {
+func New(conf *config.SiteConfig, files fsys.FileSystem) (*Builder, error) {
+	if _, err := files.Stat(conf.SourceDir); err != nil {
 		return nil, err
 	}
 	log.Info("Creating builder", "source", conf.SourceDir)
@@ -35,6 +35,7 @@ func New(conf *config.SiteConfig) (*Builder, error) {
 			Site: conf,
 		},
 		search: s,
+		files:  files,
 	}, nil
 }
 
@@ -45,16 +46,16 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 		return nil
 	}
 
-	log.Debug("building "+filepath.Base(outPath), "from", tplPath, "to", outPath)
+	log.Debug("building "+b.files.Base(outPath), "from", tplPath, "to", outPath)
 	out, err := b.Render(tplPath, b.context)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(filepath.Dir(outPath), 0755)
+	err = b.files.MkdirAll(b.files.Dir(outPath), 0755)
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(outPath, []byte(out), 0755)
+	err = b.files.WriteFile(outPath, []byte(out), 0755)
 	if err != nil {
 		return err
 	}
@@ -65,11 +66,11 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 func (b *Builder) BuildExtraPages() error {
 	var err error
 	for _, tpl := range theme.ExtraPageNames {
-		tplPath := filepath.Join(b.site.ThemeDir(), tpl+config.TemplateExt)
-		outPath := filepath.Join(b.site.PublicDir, tpl+".html")
-		sourcePath := filepath.Join(b.site.SourceDir, tpl+".md")
+		tplPath := b.files.Join(b.site.ThemeDir(), tpl+config.TemplateExt)
+		outPath := b.files.Join(b.site.PublicDir, tpl+".html")
+		sourcePath := b.files.Join(b.site.SourceDir, tpl+".md")
 
-		if _, err := os.Stat(sourcePath); err == nil {
+		if _, err := b.files.Stat(sourcePath); err == nil {
 			p, err := b.postFromSource(sourcePath)
 			if err != nil {
 				log.Error("Could not render template", "error", err)
@@ -91,7 +92,7 @@ func (b *Builder) BuildExtraPages() error {
 }
 
 func (b *Builder) BuildPostPreview(outPath string) error {
-	tplPath := filepath.Join(b.site.ThemeDir(), "post-preview"+config.TemplateExt)
+	tplPath := b.files.Join(b.site.ThemeDir(), "post-preview"+config.TemplateExt)
 	outPath = outPath + ".preview"
 	err := b.BuildOne(tplPath, outPath)
 	return err
@@ -99,15 +100,15 @@ func (b *Builder) BuildPostPreview(outPath string) error {
 }
 
 func (b *Builder) BuildPosts() error {
-	tplPath := filepath.Join(b.site.ThemeDir(), "post.html")
-	_, err := os.Stat(b.site.PublicDir)
+	tplPath := b.files.Join(b.site.ThemeDir(), "post.html")
+	_, err := b.files.Stat(b.site.PublicDir)
 	if err != nil {
-		err2 := os.Mkdir(b.site.PublicDir, 0755)
+		err2 := b.files.Mkdir(b.site.PublicDir, 0755)
 		if err2 != nil {
 			return err2
 		}
 	}
-	err = filepath.WalkDir(b.site.SourceDir, func(path string, d os.DirEntry, err error) error {
+	err = b.files.WalkDir(b.site.SourceDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -118,7 +119,7 @@ func (b *Builder) BuildPosts() error {
 		// name with subdirectories included, leading slash removed
 		subName := strings.TrimPrefix(strings.TrimPrefix(path, b.site.SourceDir), "/")
 
-		if filepath.Ext(d.Name()) != ".md" {
+		if b.files.Ext(d.Name()) != ".md" {
 			// TODO: copy files over?
 			return nil
 		}
@@ -127,9 +128,9 @@ func (b *Builder) BuildPosts() error {
 		// 	// skip built-in pages (they are built with the theme)
 		// 	return nil
 		// }
-		plain := strings.TrimSuffix(subName, filepath.Ext(d.Name()))
+		plain := strings.TrimSuffix(subName, b.files.Ext(d.Name()))
 
-		outPath := filepath.Join(b.site.PublicDir, plain+".html")
+		outPath := b.files.Join(b.site.PublicDir, plain+".html")
 		post, err := b.postFromSource(path)
 		if err != nil {
 			return err
@@ -178,8 +179,8 @@ func (b *Builder) BuildPostLists() error {
 			postI++
 		}
 
-		tplPath := filepath.Join(b.site.ThemeDir(), "posts.html")
-		outPath := filepath.Join(b.site.PublicDir, fmt.Sprintf("posts-%d.html", pnum+1))
+		tplPath := b.files.Join(b.site.ThemeDir(), "posts.html")
+		outPath := b.files.Join(b.site.PublicDir, fmt.Sprintf("posts-%d.html", pnum+1))
 		err := b.BuildOne(tplPath, outPath)
 		if err != nil {
 			return err
@@ -221,18 +222,18 @@ func (b *Builder) BuildAll() error {
 		return err
 	}
 
-	idxPath := filepath.Join(b.site.PublicDir, "index.json")
+	idxPath := b.files.Join(b.site.PublicDir, "index.json")
 	log.Info("writing search index", "outfile", idxPath)
 	idx, err := b.search.ToJson()
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(idxPath, idx, 0755)
+	err = b.files.WriteFile(idxPath, idx, 0755)
 	if err != nil {
 		return err
 	}
-	err = cp.Copy(filepath.Join(b.site.ThemeDir(), "dist"), filepath.Join(b.site.PublicDir, "dist"), cp.Options{AddPermission: 0755})
+	err = b.files.Copy(b.files.Join(b.site.ThemeDir(), "dist"), b.files.Join(b.site.PublicDir, "dist"), 0755)
 
 	// println(string(idx))
 	return err

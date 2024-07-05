@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/nullism/gotoweb/builder"
 	"github.com/nullism/gotoweb/config"
+	"github.com/nullism/gotoweb/fsys"
 	"github.com/nullism/gotoweb/logging"
 	"github.com/nullism/gotoweb/newsite"
 )
@@ -42,11 +43,12 @@ func main() {
 		}
 		println("New command " + ns.Name)
 	case "build":
-		conf, err := config.SiteFromConfig()
+		files := &fsys.OsFileSystem{}
+		conf, err := config.SiteFromConfig(files)
 		if err != nil {
 			panic(err)
 		}
-		bldr, err := builder.New(conf)
+		bldr, err := builder.New(conf, files)
 		if err != nil {
 			panic(err)
 		}

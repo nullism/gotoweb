@@ -3,9 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/creasty/defaults"
+	"github.com/nullism/gotoweb/fsys"
 	"github.com/nullism/gotoweb/logging"
 	"gopkg.in/yaml.v3"
 )
@@ -26,14 +26,15 @@ type SiteConfig struct {
 	Search       SearchConfig
 	Version      string
 	PostsPerPage int `default:"2"`
+	files        fsys.FileSystem
 }
 
 func (s SiteConfig) ThemeDir() string {
-	return filepath.Join(s.RootDir, s.Theme.Path)
+	return s.files.Join(s.RootDir, s.Theme.Path)
 }
 
-func SiteFromConfig() (*SiteConfig, error) {
-	confPath, err := getConfigPath(0)
+func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
+	confPath, err := files.FindInParent("config.yaml", 3)
 	if err != nil {
 		return nil, err
 	}
@@ -41,46 +42,39 @@ func SiteFromConfig() (*SiteConfig, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open config file: %w", err)
 	}
-	var sc SiteConfig
-	err = yaml.Unmarshal(bs, &sc)
-
+	var s SiteConfig
+	err = yaml.Unmarshal(bs, &s)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal config: %w", err)
 	}
-	err = defaults.Set(&sc)
+	s.files = files
+
+	err = defaults.Set(&s)
 	if err != nil {
 		return nil, fmt.Errorf("could not set defaults: %w", err)
 	}
 
-	if sc.Version == "" {
+	if s.Version == "" {
 		return nil, fmt.Errorf("config version not set")
 	}
 
-	if sc.Index.MinKeywordLength == 0 {
-		sc.Index.MinKeywordLength = 3
+	if s.Index.MinKeywordLength == 0 {
+		s.Index.MinKeywordLength = 3
 	}
 
-	sc.ConfigPath = confPath
-	sc.RootDir = filepath.Dir(confPath)
-	sc.SourceDir = filepath.Join(sc.RootDir, SourceDir)
-	// if sc.ThemeDir == "" {
-	// 	tp := filepath.Join(sc.RootDir, ThemesDir, sc.Theme.Path)
-	// 	sc.ThemeDir = tp
-	// } else if !filepath.IsAbs(sc.ThemeDir) {
-	// 	// make it absolute and preserve relative paths, e.g /root/../../themes/foo
-	// 	td := filepath.Join(sc.RootDir, sc.ThemeDir)
-	// 	sc.ThemeDir = td
-	// }
+	s.ConfigPath = confPath
+	s.RootDir = s.files.Dir(confPath)
+	s.SourceDir = s.files.Join(s.RootDir, SourceDir)
 
-	if sc.PublicDir == "" {
-		sd := filepath.Join(sc.RootDir, PublicDir)
-		sc.PublicDir = sd
-	} else if !filepath.IsAbs(sc.PublicDir) {
+	if s.PublicDir == "" {
+		sd := s.files.Join(s.RootDir, PublicDir)
+		s.PublicDir = sd
+	} else if !s.files.IsAbs(s.PublicDir) {
 		// make it absolute and preserve relative paths, e.g /root/../../public
-		pd := filepath.Join(sc.RootDir, sc.PublicDir)
-		sc.PublicDir = pd
+		pd := s.files.Join(s.RootDir, s.PublicDir)
+		s.PublicDir = pd
 	}
 
-	log.Info("Loaded config", "site name", sc.Name, "public dir", sc.PublicDir, "source dir", sc.SourceDir, "theme dir", sc.ThemeDir)
-	return &sc, nil
+	log.Info("Loaded config", "site name", s.Name, "public dir", s.PublicDir, "source dir", s.SourceDir, "theme dir", s.ThemeDir)
+	return &s, nil
 }
