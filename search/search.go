@@ -12,7 +12,7 @@ type Document struct {
 	Tags  []string `json:"tags"`
 }
 
-type Search struct {
+type Index struct {
 	CurrentId      int                    `json:"i"`
 	KwMap          map[string]map[int]int `json:"kw"`
 	TagMap         map[string][]int       `json:"tm"`
@@ -24,8 +24,8 @@ type Search struct {
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
 var wordRe = regexp.MustCompile(`\w+`)
 
-func New(minKeyworldLen int, stopwords []string) *Search {
-	return &Search{
+func New(minKeyworldLen int, stopwords []string) *Index {
+	return &Index{
 		CurrentId:      1,
 		DocMap:         make(map[int]Document),
 		TagMap:         make(map[string][]int),
@@ -35,7 +35,7 @@ func New(minKeyworldLen int, stopwords []string) *Search {
 	}
 }
 
-func (s *Search) getIdByHref(href string) int {
+func (s *Index) getIdByHref(href string) int {
 	for id, doc := range s.DocMap {
 		if doc.Href == href {
 			return id
@@ -44,7 +44,7 @@ func (s *Search) getIdByHref(href string) int {
 	return -1
 }
 
-func (s *Search) Index(href, title, body string, tags []string) error {
+func (s *Index) Add(href, title, body string, tags []string) error {
 	if id := s.getIdByHref(href); id != -1 {
 		println("SKIPPING ", href)
 		return nil // already indexed
@@ -91,6 +91,6 @@ func (s *Search) Index(href, title, body string, tags []string) error {
 	return nil
 }
 
-func (s *Search) ToJson() ([]byte, error) {
+func (s *Index) ToJson() ([]byte, error) {
 	return json.Marshal(s)
 }

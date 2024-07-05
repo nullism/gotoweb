@@ -63,6 +63,6 @@ function search(query) {
   return hits
 }
 
-loadIndex().then(() => {
-  console.log("search index loaded")
-})
+// loadIndex().then(() => {
+//   console.log("search index loaded")
+// })

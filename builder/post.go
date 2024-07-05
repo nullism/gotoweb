@@ -39,8 +39,6 @@ func parsePostConfig(post *Post, body []byte) (*Post, []byte, error) {
 					return nil, []byte(""), fmt.Errorf("could not parse yaml config: %w", err)
 				}
 			}
-		} else {
-			println("first line matched!")
 		}
 	}
 	return post, text, nil

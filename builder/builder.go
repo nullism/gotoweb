@@ -18,7 +18,7 @@ var log = logging.GetLogger()
 type Builder struct {
 	site    *config.SiteConfig
 	context *RenderContext
-	search  *search.Search
+	index   *search.Index
 	files   fsys.FileSystem
 }
 
@@ -34,8 +34,8 @@ func New(conf *config.SiteConfig, files fsys.FileSystem) (*Builder, error) {
 		context: &RenderContext{
 			Site: conf,
 		},
-		search: s,
-		files:  files,
+		index: s,
+		files: files,
 	}, nil
 }
 
@@ -139,7 +139,7 @@ func (b *Builder) BuildPosts() error {
 			return nil
 		}
 		if !post.SkipIndex {
-			err = b.search.Index(post.Href, post.Title, post.Body, post.Tags)
+			err = b.index.Add(post.Href, post.Title, post.Body, post.Tags)
 			if err != nil {
 				return err
 			}
@@ -224,7 +224,7 @@ func (b *Builder) BuildAll() error {
 
 	idxPath := b.files.Join(b.site.PublicDir, "index.json")
 	log.Info("writing search index", "outfile", idxPath)
-	idx, err := b.search.ToJson()
+	idx, err := b.index.ToJson()
 	if err != nil {
 		return err
 	}

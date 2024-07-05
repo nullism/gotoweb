@@ -5,13 +5,14 @@ import (
 	"testing"
 
 	"github.com/nullism/gotoweb/config"
+	"github.com/nullism/gotoweb/fsys"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_postFromBytes(t *testing.T) {
 	path := "/foo/test.md"
 	bytes := []byte("---\ntitle: test\n---\nHello World")
-	b := &Builder{site: &config.SiteConfig{SourceDir: "/foo"}}
+	b := &Builder{site: &config.SiteConfig{SourceDir: "/foo"}, files: &fsys.OsFileSystem{}}
 	post, err := b.postFromBytes(bytes, path)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, post)
@@ -33,6 +34,22 @@ func Test_parsePostConfig(t *testing.T) {
 			&Post{Title: "replaceme"},
 			"---\ntitle: \"Hello World\"\n---\nASDFASDF",
 			&Post{Title: "Hello World"},
+			"\nASDFASDF",
+			false,
+		},
+		{
+			"test with tags",
+			&Post{Title: ""},
+			"---\ntags: [a, b, c]\n---\nASDFASDF",
+			&Post{Title: "", Tags: []string{"a", "b", "c"}},
+			"\nASDFASDF",
+			false,
+		},
+		{
+			"test skip publish and skip index",
+			&Post{Title: "foo"},
+			"---\nskip_publish: true\nskip_index: true\n---\nASDFASDF",
+			&Post{Title: "foo", SkipPublish: true, SkipIndex: true},
 			"\nASDFASDF",
 			false,
 		},
