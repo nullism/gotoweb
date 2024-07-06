@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/creasty/defaults"
 	"github.com/nullism/gotoweb/fsys"
@@ -13,7 +14,7 @@ import (
 var log = logging.GetLogger()
 
 type SiteConfig struct {
-	Name       string
+	Title      string
 	Theme      ThemeConfig
 	Copyright  string
 	ConfigPath string // path to config.yaml
@@ -25,12 +26,28 @@ type SiteConfig struct {
 	Prefix       string `yaml:"uri_prefix"`
 	Search       SearchConfig
 	Version      string
-	PostsPerPage int `default:"2"`
+	PostsPerPage int        `default:"2"`
+	Menu         MenuConfig `yaml:"menu"`
 	files        fsys.FileSystem
 }
 
 func (s SiteConfig) ThemeDir() string {
 	return s.files.Join(s.RootDir, s.Theme.Path)
+}
+
+// UpdatePrefixes recursively adds the site prefix to the menu items.
+func (s *SiteConfig) UpdatePrefixes(item *MenuItem) {
+	if !s.Menu.AutoPrefix {
+		return
+	}
+	if !strings.HasPrefix(item.Href, "http") {
+		item.Href = s.Prefix + item.Href
+	}
+	if item.Children != nil {
+		for _, child := range item.Children {
+			s.UpdatePrefixes(child)
+		}
+	}
 }
 
 func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
@@ -62,6 +79,13 @@ func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
 		s.Index.MinKeywordLength = 3
 	}
 
+	// Add site prefix if necessary
+	if s.Menu.AutoPrefix && s.Menu.Items != nil {
+		for _, itm := range s.Menu.Items {
+			s.UpdatePrefixes(itm)
+		}
+	}
+
 	s.ConfigPath = confPath
 	s.RootDir = s.files.Dir(confPath)
 	s.SourceDir = s.files.Join(s.RootDir, SourceDir)
@@ -75,6 +99,6 @@ func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
 		s.PublicDir = pd
 	}
 
-	log.Info("Loaded config", "site name", s.Name, "public dir", s.PublicDir, "source dir", s.SourceDir, "theme dir", s.ThemeDir)
+	log.Info("Loaded config", "site name", s.Title, "public dir", s.PublicDir, "source dir", s.SourceDir, "theme dir", s.ThemeDir())
 	return &s, nil
 }

@@ -194,7 +194,7 @@ func (b *Builder) BuildPostLists() error {
 
 // BuildAll builds all the pages and posts for the site.
 func (b *Builder) BuildAll() error {
-	log.Info("building project", "site", b.site.Name)
+	log.Info("building project", "site", b.site.Title)
 
 	err := b.RemovePublic()
 	if err != nil {

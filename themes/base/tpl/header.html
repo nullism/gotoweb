@@ -2,7 +2,7 @@
 
 <head>
     <title>
-        {{ if .Post }}{{ .Post.Title }}{{ else }}{{ .Site.Name }}{{ end }}
+        {{ if .Post }}{{ .Post.Title }}{{ else }}{{ .Site.Title }}{{ end }}
     </title>
     <!-- include style.css -->
     <link rel="stylesheet" href="{{.Site.Prefix}}/dist/style.css">
@@ -11,9 +11,23 @@
 </head>
 
 <body>
+
     <div>
-        <a href="{{.Site.Prefix}}/">Home</a>
-        <a href="{{.Site.Prefix}}/about.html">About</a>
-        <a href="{{.Site.Prefix}}/posts-1.html">Posts</a>
-        <a href="{{.Site.Prefix}}/search.html">Search</a>
+        <h2>Menu</h2>
+        <ul>
+            {{ range .Site.Menu.Items }}
+            <li>
+                <a href="{{.Href}}">{{.Title}}</a>
+                {{ if .Children }}
+                <ul>
+                    {{ range .Children }}
+                    <li>
+                        <a href="{{.Href}}">{{.Title}}</a>
+                    </li>
+                    {{ end }}
+                </ul>
+                {{ end }}
+            </li>
+            {{ end }}
+        </ul>
     </div>

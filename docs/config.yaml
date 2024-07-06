@@ -1,4 +1,4 @@
-name: Gotoweb Documentation
+title: Gotoweb Documentation
 
 # public_directory: public
 # uri_prefix: /docs
@@ -16,3 +16,19 @@ theme:
   args:
     style: dark
 
+menu:
+  auto_prefix: true
+  items:
+    - title: Home
+      href: /index.html
+    - title: Posts
+      href: /posts-1.html
+      children:
+        - title: Posts 1
+          href: /posts-1.html
+        - title: Posts 2
+          href: /posts-2.html
+    - title: Search
+      href: /search.html
+    - title: Google
+      href: https://google.com
