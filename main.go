@@ -35,15 +35,16 @@ func main() {
 	if CLI.Verbose {
 		logging.Configure(slog.LevelDebug)
 	}
+	files := &fsys.OsFileSystem{}
 	switch ctx.Command() {
 	case "new <name>":
-		ns, err := newsite.New(CLI.New.Name)
+		ns, err := newsite.New(CLI.New.Name, files)
 		if err != nil {
 			panic(err)
 		}
 		println("New command " + ns.Name)
 	case "build":
-		files := &fsys.OsFileSystem{}
+
 		conf, err := config.SiteFromConfig(files)
 		if err != nil {
 			panic(err)

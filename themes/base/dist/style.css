@@ -1,0 +1,13 @@
+div.preview {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+}
+
+span.tag {
+    padding: 2px;
+    margin: 2px;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}

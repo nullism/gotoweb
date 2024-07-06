@@ -4,6 +4,8 @@
     <title>
         {{ if .Post }}{{ .Post.Title }}{{ else }}{{ .Site.Name }}{{ end }}
     </title>
+    <!-- include style.css -->
+    <link rel="stylesheet" href="{{.Site.Prefix}}/dist/style.css">
     <!-- include search.js -->
     <script src="{{.Site.Prefix}}/dist/search.js"></script>
 </head>

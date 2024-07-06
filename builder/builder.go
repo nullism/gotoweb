@@ -143,6 +143,9 @@ func (b *Builder) BuildPosts() error {
 			if err != nil {
 				return err
 			}
+			if post.Tags != nil {
+				b.context.AddTags(post.Tags...)
+			}
 		}
 		b.context.Post = post
 		b.context.Posts = append(b.context.Posts, post)

@@ -1,6 +1,7 @@
 ---
 title: Hello
 tags: [random]
+blurb: This post is a quick one about stuff.
 ---
 
 # HELLO!

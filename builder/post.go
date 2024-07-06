@@ -26,6 +26,9 @@ type Post struct {
 // postRe requires the start (---) to be on the first line.
 var postRe = regexp.MustCompile(`(?m)([ -~\n]*?)^---$((.|\r?\n)*?)^---$((.|\r?\n)*)`)
 
+// regex to strip html tags
+var tagRe = regexp.MustCompile(`<[^>]*>`)
+
 func parsePostConfig(post *Post, body []byte) (*Post, []byte, error) {
 	text := body
 	matches := postRe.FindStringSubmatch(string(body))
@@ -65,6 +68,11 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 
 	post.Body = string(htmlBytes)
 	post.markdown = string(bs)
+
+	if post.Blurb == "" {
+		blurbBytes := tagRe.ReplaceAll(htmlBytes, []byte(" "))
+		post.Blurb = string(blurbBytes[:min(200, len(blurbBytes))])
+	}
 
 	href := b.site.Prefix + strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1)
 	post.Href = href
