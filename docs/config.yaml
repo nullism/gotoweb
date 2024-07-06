@@ -24,6 +24,10 @@ menu:
     - title: Posts
       href: /posts-1.html
       children:
+        - title: Sub
+          children:
+            - title: Hello 2
+              href: /posts/sub/hello2.html
         - title: Posts 1
           href: /posts-1.html
         - title: Posts 2

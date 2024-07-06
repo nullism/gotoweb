@@ -1,0 +1,14 @@
+<ul>
+    {{ range .Args.Items }}
+    <li>
+        {{ if .Href }}
+        <a href="{{.Href}}">{{.Title}}</a>
+        {{ else }}
+        {{.Title }}
+        {{ end }}
+        {{ if .Children }}
+        {{ tpl "menu" "Items" .Children }}
+        {{ end }}
+    </li>
+    {{ end}}
+</ul>

@@ -14,20 +14,5 @@
 
     <div>
         <h2>Menu</h2>
-        <ul>
-            {{ range .Site.Menu.Items }}
-            <li>
-                <a href="{{.Href}}">{{.Title}}</a>
-                {{ if .Children }}
-                <ul>
-                    {{ range .Children }}
-                    <li>
-                        <a href="{{.Href}}">{{.Title}}</a>
-                    </li>
-                    {{ end }}
-                </ul>
-                {{ end }}
-            </li>
-            {{ end }}
-        </ul>
+        {{ tpl "menu" "Items" .Site.Menu.Items }}
     </div>
