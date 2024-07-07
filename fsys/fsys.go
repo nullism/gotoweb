@@ -15,6 +15,7 @@ type FileSystem interface {
 	Base(string) string
 	Copy(string, string, os.FileMode) error
 	Dir(string) string
+	Exists(string) bool
 	Ext(string) string
 	FindInParent(string, int) (string, error)
 	Join(elem ...string) string
@@ -50,6 +51,12 @@ func (OsFileSystem) Copy(src, dst string, perm os.FileMode) error {
 // Dir returns all but the last element of path, typically the path's directory.
 func (OsFileSystem) Dir(name string) string {
 	return filepath.Dir(name)
+}
+
+// Exists returns true if the path exists.
+func (OsFileSystem) Exists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
 
 // Ext returns the file name extension used by path.

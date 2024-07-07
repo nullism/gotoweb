@@ -123,11 +123,7 @@ func (b *Builder) BuildPosts() error {
 			// TODO: copy files over?
 			return nil
 		}
-		// if theme.IsExtraPage(strings.TrimSuffix(subName, ".md")) {
-		// 	log.Warn("skipping extra page", "page", subName)
-		// 	// skip built-in pages (they are built with the theme)
-		// 	return nil
-		// }
+
 		plain := strings.TrimSuffix(subName, b.files.Ext(d.Name()))
 
 		outPath := b.files.Join(b.site.PublicDir, plain+".html")

@@ -1,0 +1,38 @@
+# config version, required
+version: 1
+
+# the site title
+title: {{ .Title }}
+
+# Copyright notice that themes may display in the footer
+copyright: {{ .Title }} 2023
+
+# Optional prefix for all URIs (/index.html becomes /docs/index.html)
+# uri_prefix: /docs
+
+# Directory where the generated site will be placed
+# public_directory: public
+
+# Theme configuration
+theme:
+  # Path to the theme directory
+  path: themes/base
+  # Arguments that may be used by specific themes.
+  # args:
+  #  style: dark
+
+# Menu configuration
+menu:
+  # if true, adds the URI prefix to the href of each item that doesn't start with http
+  auto_prefix: true
+
+  # Items to appear in the menu or sitemap.
+  items:
+    - title: Home
+      href: /index.html
+    - title: Example
+      children:
+        - title: Gotoweb Documentation
+          href: https://gotoweb.nullism.com
+    - title: Search
+      href: /search.html

@@ -8,6 +8,7 @@ function loadIndex() {
     })
 }
 
+// tagged("tag") returns a list of documents with that tag.
 function tagged(tag) {
   const t = indexData.tm[tag]
   if (t === undefined) {
@@ -20,16 +21,13 @@ function tagged(tag) {
   return hits
 }
 
+// search("query") returns a list of documents that match the query.
 function search(query) {
 
   query = query.toLowerCase()
 
-  console.log("index is", indexData)
   // split query by space
   var parts = query.split(" ")
-  console.log("parts are ", parts)
-  console.log("query is ", query)
-
 
   var hitMap = {}
   for (var p of parts) {
@@ -45,13 +43,9 @@ function search(query) {
     }
   }
 
-  console.log("hitMap is ", hitMap)
-
-
   var sortedHitIds = Object.keys(hitMap).sort(function (a, b) {
     return hitMap[b] - hitMap[a]
   })
-  console.log("sortedHitIds is ", sortedHitIds)
 
   var hits = []
   for (var i = 0; i < sortedHitIds.length; i++) {
@@ -59,10 +53,5 @@ function search(query) {
     var hit = indexData.docs[id]
     hits.push(hit)
   }
-  console.log("hits are ", hits)
   return hits
 }
-
-// loadIndex().then(() => {
-//   console.log("search index loaded")
-// })

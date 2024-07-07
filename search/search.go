@@ -21,6 +21,8 @@ type Index struct {
 	minKeyworldLen int
 }
 
+const titleKeywordValue = 5
+
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
 var wordRe = regexp.MustCompile(`\w+`)
 
@@ -71,7 +73,7 @@ func (s *Index) Add(href, title, body string, tags []string) error {
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
 			s.KwMap[strings.ToLower(w)] = make(map[int]int)
 		}
-		s.KwMap[strings.ToLower(w)][id] += 2
+		s.KwMap[strings.ToLower(w)][id] += titleKeywordValue
 
 	}
 
