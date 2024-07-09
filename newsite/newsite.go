@@ -1,9 +1,10 @@
 package newsite
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 	"text/template"
+	"time"
 
 	_ "embed"
 
@@ -19,7 +20,9 @@ type NewSite struct {
 }
 
 type configContext struct {
-	Title string
+	Title   string
+	Version string
+	Year    string
 }
 
 var log = logging.GetLogger()
@@ -49,15 +52,17 @@ func New(name string, files fsys.FileSystem) (*NewSite, error) {
 		return nil, fmt.Errorf("could not parse sample yaml: %w", err)
 	}
 
-	sb := strings.Builder{}
-	err = tpl.Execute(&sb, configContext{
-		Title: name,
+	bb := bytes.Buffer{}
+	err = tpl.Execute(&bb, configContext{
+		Title:   name,
+		Version: config.Version,
+		Year:    time.Now().Format("2006"),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not execute template: %w", err)
 	}
 
-	err = files.WriteFile(files.Join(path, "config.yaml"), []byte(sb.String()), 0755)
+	err = files.WriteFile(files.Join(path, "config.yaml"), bb.Bytes(), 0755)
 	if err != nil {
 		return nil, fmt.Errorf("could not create config.yaml: %w", err)
 	}
@@ -68,8 +73,4 @@ func New(name string, files fsys.FileSystem) (*NewSite, error) {
 	}
 
 	return ns, nil
-}
-
-func (s *NewSite) Create() error {
-	return nil
 }

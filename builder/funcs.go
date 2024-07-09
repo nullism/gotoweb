@@ -7,7 +7,7 @@ import (
 	"github.com/nullism/gotoweb/config"
 )
 
-func (b *Builder) getFuncMap() map[string]any {
+func (b *Builder) getThemeFuncMap() map[string]any {
 	return map[string]any{
 		"tpl": b.tpl,
 		"map": b.toMap,
@@ -16,8 +16,25 @@ func (b *Builder) getFuncMap() map[string]any {
 	}
 }
 
+func (b *Builder) getSourceFuncMap() map[string]any {
+	return map[string]any{
+		"add":      b.add,
+		"sub":      b.sub,
+		"map":      b.toMap,
+		"postLink": b.postLink,
+	}
+}
+
 func (b *Builder) add(num, amount int) int {
 	return num + amount
+}
+
+func (b *Builder) postLink(name string) (string, error) {
+	path := b.files.Join(b.site.SourceDir, name+".md")
+	if !b.files.Exists(path) {
+		return "", fmt.Errorf("post %s does not exist", name)
+	}
+	return b.site.Prefix + name + ".html", nil
 }
 
 func (b *Builder) sub(num, amount int) int {

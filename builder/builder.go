@@ -178,8 +178,8 @@ func (b *Builder) BuildPostLists() error {
 			postI++
 		}
 
-		tplPath := b.files.Join(b.site.ThemeDir(), "posts.html")
-		outPath := b.files.Join(b.site.PublicDir, fmt.Sprintf("posts-%d.html", pnum+1))
+		tplPath := b.files.Join(b.site.ThemeDir(), "post-list.html")
+		outPath := b.files.Join(b.site.PublicDir, fmt.Sprintf("post-list-%d.html", pnum+1))
 		err := b.BuildOne(tplPath, outPath)
 		if err != nil {
 			return err
@@ -233,6 +233,23 @@ func (b *Builder) BuildAll() error {
 		return err
 	}
 	err = b.files.Copy(b.files.Join(b.site.ThemeDir(), "dist"), b.files.Join(b.site.PublicDir, "dist"), 0755)
+	if err != nil {
+		return err
+	}
+
+	// copy homepage
+	if b.site.Homepage != "" {
+		fromPath := b.files.Join(b.site.PublicDir, b.site.Homepage)
+		toPath := b.files.Join(b.site.PublicDir, "index.html")
+		if b.files.Exists(toPath) {
+			log.Warn("a homepage already exists", "path", toPath)
+		}
+		log.Info("copying homepage", "from", fromPath, "to", toPath)
+		err = b.files.Copy(fromPath, toPath, 0755)
+		if err != nil {
+			return err
+		}
+	}
 
 	// println(string(idx))
 	return err

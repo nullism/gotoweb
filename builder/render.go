@@ -13,7 +13,7 @@ func (b *Builder) Render(tplPath string, content *RenderContext) (string, error)
 		return "", err
 	}
 
-	tpl, err := template.New(tplPath).Funcs(b.getFuncMap()).Option("missingkey=error").Parse(string(bs))
+	tpl, err := template.New(tplPath).Funcs(b.getThemeFuncMap()).Option("missingkey=error").Parse(string(bs))
 
 	if err != nil {
 		return "", err

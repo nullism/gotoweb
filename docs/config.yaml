@@ -10,6 +10,9 @@ index:
   min_keyword_length: 3
   stopwords: ["the", "and", "how"]
 
+# Set homepage
+homepage: post-list-1.html
+
 theme:
   path: ../themes/base
 
@@ -22,16 +25,16 @@ menu:
     - title: Home
       href: /index.html
     - title: Posts
-      href: /posts-1.html
+      href: /post-list-1.html
       children:
         - title: Sub
           children:
             - title: Hello 2
               href: /posts/sub/hello2.html
         - title: Posts 1
-          href: /posts-1.html
+          href: /post-list-1.html
         - title: Posts 2
-          href: /posts-2.html
+          href: /post-list-2.html
     - title: Search
       href: /search.html
     - title: Google

@@ -2,7 +2,7 @@
     {{ range .Args.Items }}
     <li>
         {{ if .Href }}
-        <a href="{{.Href}}">{{.Title}}</a>
+        <a href="{{.Href}}" target="{{.Target}}">{{.Title}}</a>
         {{ else }}
         {{.Title }}
         {{ end }}

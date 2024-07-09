@@ -1,17 +1,27 @@
 # config version, required
-version: 1
+version: {{ .Version }}
 
 # the site title
 title: {{ .Title }}
 
 # Copyright notice that themes may display in the footer
-copyright: {{ .Title }} 2023
+copyright: {{ .Title }} {{ .Year }}
 
 # Optional prefix for all URIs (/index.html becomes /docs/index.html)
+#  this is useful when the site is hosted in a subdirectory.
+#  Default: empty
 # uri_prefix: /docs
 
-# Directory where the generated site will be placed
+# Directory where the generated site will be placed.
+#  Default: public
 # public_directory: public
+
+# Search index configuration
+index:
+  # Minimum keyword length for the search index
+  min_keyword_length: 3
+  # List of words to ignore in the search index
+  stopwords: ["the", "and", "how"]
 
 # Theme configuration
 theme:
@@ -24,15 +34,19 @@ theme:
 # Menu configuration
 menu:
   # if true, adds the URI prefix to the href of each item that doesn't start with http
-  auto_prefix: true
+  #  Default: true
+  #  auto_prefix: true
 
   # Items to appear in the menu or sitemap.
   items:
     - title: Home
       href: /index.html
+    - title: Posts
+      href: /post-list-1.html
     - title: Example
       children:
         - title: Gotoweb Documentation
           href: https://gotoweb.nullism.com
+          target: _blank
     - title: Search
       href: /search.html

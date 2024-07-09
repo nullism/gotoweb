@@ -18,6 +18,7 @@ type SiteConfig struct {
 	Theme      ThemeConfig
 	Copyright  string
 	ConfigPath string // path to config.yaml
+	Homepage   string
 	Index      IndexConfig
 	PublicDir  string
 	RootDir    string

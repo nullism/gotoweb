@@ -1,6 +1,6 @@
 package theme
 
-var ExtraPageNames = []string{"about", "index", "search", "404"}
+var ExtraPageNames = []string{"search"}
 
 func IsExtraPage(name string) bool {
 	for _, n := range ExtraPageNames {

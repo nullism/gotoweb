@@ -6,6 +6,7 @@ type MenuConfig struct {
 }
 
 type MenuItem struct {
+	Target   string `default:"_self"`
 	Title    string
 	Href     string
 	Children []*MenuItem
