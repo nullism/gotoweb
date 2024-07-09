@@ -41,14 +41,14 @@ Let's create `tpl/image.html` that shows an image and caption.
 ```html
 <!-- tpl/image.html -->
 <div>
-    <img src="{{.Args.Src}}" />
-    <p>{{.Args.Caption}}</p>
+    <img src="{{ `{{.Args.Src}}` }}" />
+    <p>{{ `{{.Args.Caption}}` }}</p>
 </div>
 ```
 
 To use the template, we'd do:
 
 ```
-{{ tpl "image" "Src" "/path/to/my-image.png" "Caption" "My caption" }}
+{{ `{{ tpl "image" "Src" "/path/to/my-image.png" "Caption" "My caption" }}` }}
 ```
 

@@ -47,7 +47,7 @@ func (b *Builder) BuildOne(tplPath, outPath string) error {
 	}
 
 	log.Debug("building "+b.files.Base(outPath), "from", tplPath, "to", outPath)
-	out, err := b.Render(tplPath, b.context)
+	out, err := b.RenderTheme(tplPath, b.context)
 	if err != nil {
 		return err
 	}

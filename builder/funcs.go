@@ -9,7 +9,7 @@ import (
 
 func (b *Builder) getThemeFuncMap() map[string]any {
 	return map[string]any{
-		"tpl": b.tpl,
+		"tpl": b.tplTheme,
 		"map": b.toMap,
 		"sub": b.sub,
 		"add": b.add,
@@ -18,10 +18,10 @@ func (b *Builder) getThemeFuncMap() map[string]any {
 
 func (b *Builder) getSourceFuncMap() map[string]any {
 	return map[string]any{
-		"add":      b.add,
-		"sub":      b.sub,
-		"map":      b.toMap,
-		"postLink": b.postLink,
+		"add":   b.add,
+		"sub":   b.sub,
+		"map":   b.toMap,
+		"plink": b.postLink,
 	}
 }
 
@@ -32,7 +32,7 @@ func (b *Builder) add(num, amount int) int {
 func (b *Builder) postLink(name string) (string, error) {
 	path := b.files.Join(b.site.SourceDir, name+".md")
 	if !b.files.Exists(path) {
-		return "", fmt.Errorf("post %s does not exist", name)
+		return "", fmt.Errorf("post %s does not exist", path)
 	}
 	return b.site.Prefix + name + ".html", nil
 }
@@ -41,14 +41,14 @@ func (b *Builder) sub(num, amount int) int {
 	return num - amount
 }
 
-func (b *Builder) tpl(name string, pairs ...any) (string, error) {
+func (b *Builder) tplTheme(name string, pairs ...any) (string, error) {
 	m, err := b.toMap(pairs...)
 	if err != nil {
 		return "", err
 	}
 	path := b.files.Join(b.site.ThemeDir(), config.HelpersDir, name+config.TemplateExt)
 	b.context.Args = m
-	return b.Render(path, b.context)
+	return b.RenderTheme(path, b.context)
 }
 
 func (b *Builder) toMap(pairs ...any) (map[string]any, error) {

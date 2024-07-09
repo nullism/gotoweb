@@ -2,7 +2,6 @@ package builder
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
@@ -59,6 +58,12 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 		return nil, err
 	}
 
+	str, err := b.Render(sourcePath, b.getSourceFuncMap(), bs, b.context)
+	if err != nil {
+		return nil, err
+	}
+	bs = []byte(str)
+
 	doc := p.Parse(bs)
 
 	htmlFlags := html.CommonFlags
@@ -81,10 +86,11 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 
 func (b *Builder) postFromSource(sourcePath string) (*Post, error) {
 
-	bs, err := os.ReadFile(sourcePath)
+	bs, err := b.files.ReadFile(sourcePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not read source %v: %v", sourcePath, err)
 	}
+
 	p, err := b.postFromBytes(bs, sourcePath)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing source %v: %v", sourcePath, err)
