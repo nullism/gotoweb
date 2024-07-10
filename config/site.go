@@ -14,6 +14,7 @@ import (
 var log = logging.GetLogger()
 
 type SiteConfig struct {
+	TimeFormat string `default:"2006-01-02 15:04:05"`
 	Title      string
 	Theme      ThemeConfig
 	Copyright  string

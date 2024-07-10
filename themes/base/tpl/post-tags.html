@@ -1,7 +1,15 @@
 <div>
-    {{ range $idx, $tag := .Post.Tags }}
+    {{ $tags := list }}
+    {{ if .Post }}
+    {{ $tags = .Post.Tags }}
+    {{ else if .Args.Tags }}
+    {{ $tags = .Args.Tags }}
+    {{ end }}
+
+    {{ range $idx, $tag := $tags }}
     <span class="tag">
-        <a href="{{ $.Site.Prefix }}/search.html?tag={{$tag}}">{{$tag}}</a>
+        <a href="{{ href `search.html` `tag` $tag }}">{{$tag}}</a>
     </span>
     {{ end }}
+
 </div>

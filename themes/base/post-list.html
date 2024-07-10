@@ -2,7 +2,9 @@
 
 <h1>Posts</h1>
 {{ range .Page.Posts }}
+
 <h2><a href="{{.Href}}">{{ .Title }}</a></h2>
+{{ tpl "post-tags" "Tags" .Tags }}
 <p>{{ .Body }}</p>
 {{ end }}
 

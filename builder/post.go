@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -17,8 +18,10 @@ type Post struct {
 	Blurb       string
 	Href        string
 	Tags        []string
-	SkipIndex   bool `yaml:"skip_index"`
-	SkipPublish bool `yaml:"skip_publish"`
+	SkipIndex   bool      `yaml:"skip_index"`
+	SkipPublish bool      `yaml:"skip_publish"`
+	CreatedAt   time.Time `yaml:"created_at"`
+	UpdatedAt   time.Time `yaml:"updated_at"`
 	markdown    string
 }
 
@@ -53,6 +56,12 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 
 	post := &Post{}
 	post.Title = b.files.Base(strings.TrimSuffix(sourcePath, ".md"))
+
+	if fi, err := b.files.Stat(sourcePath); err == nil {
+		post.CreatedAt = fi.ModTime()
+		post.UpdatedAt = fi.ModTime()
+	}
+
 	post, bs, err = parsePostConfig(post, bs)
 	if err != nil {
 		return nil, err
@@ -79,7 +88,10 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 		post.Blurb = string(blurbBytes[:min(200, len(blurbBytes))])
 	}
 
-	href := b.site.Prefix + strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1)
+	href, err := b.prefix(strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1))
+	if err != nil {
+		return nil, err
+	}
 	post.Href = href
 	return post, err
 }

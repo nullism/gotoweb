@@ -1,5 +1,5 @@
 <div class="preview">
-    <strong><a href="{{.Site.Prefix}}{{.Post.Href}}">{{ .Post.Title }}</a></strong>
+    <strong><a href="{{ href .Post.Href }}">{{ .Post.Title }}</a></strong>
     <br>
     {{ tpl "post-tags" }}
     <p>{{ .Post.Blurb }}</p>

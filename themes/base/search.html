@@ -17,7 +17,7 @@
 <div>
     {{ range $k, $v := .TagMap }}
     <span class="tag">
-        <a href="{{$.Site.Prefix}}/search.html?tag={{$k}}">{{$k}} {{$v}}</a>
+        <a href="{{ href `search.html` `tag` $k }}">{{$k}} {{$v}}</a>
     </span>
     {{ end }}
 </div>

@@ -1,5 +1,7 @@
 {{ tpl "header" }}
 
+<em>Updated at {{ ftime .Post.UpdatedAt }}, created at {{ ftime .Post.CreatedAt }}</em>
+
 {{ tpl "post-tags"}}
 
 {{ .Post.Body }}

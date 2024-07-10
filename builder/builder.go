@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/nullism/gotoweb/config"
 	"github.com/nullism/gotoweb/fsys"
@@ -190,6 +191,7 @@ func (b *Builder) BuildPostLists() error {
 
 // BuildAll builds all the pages and posts for the site.
 func (b *Builder) BuildAll() error {
+	start := time.Now()
 	log.Info("building project", "site", b.site.Title)
 
 	err := b.RemovePublic()
@@ -250,7 +252,7 @@ func (b *Builder) BuildAll() error {
 			return err
 		}
 	}
-
+	log.Info("built!", "took (s)", time.Since(start).Seconds())
 	// println(string(idx))
 	return err
 }
