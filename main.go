@@ -57,16 +57,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-
-		// tpl, err := template.ParseFiles("themes/default/index.html", "themes/default/templates/thumb.html")
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// err = tpl.Execute(os.Stdout, &Page{Title: "Hello", Body: "World"})
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// println("Building project")
 	default:
 		_ = ctx.PrintUsage(true)
 	}

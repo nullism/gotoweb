@@ -14,8 +14,8 @@ import (
 )
 
 type NewSite struct {
-	Name  string
-	conf  config.SiteConfig
+	Name string
+	// conf  config.SiteConfig
 	files fsys.FileSystem
 }
 
