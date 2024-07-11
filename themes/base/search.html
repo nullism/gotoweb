@@ -1,4 +1,4 @@
-{{ tpl "header" }}
+{{ tpl "header.html" }}
 
 {{ if .Post }}
 {{ .Post.Body }}
@@ -7,7 +7,30 @@
 {{ end }}
 
 
+{{ $dmap := map }}
+{{ range .Posts }}
+{{ $t := ftime .CreatedAt "2006 01/02" }}
+{{ if not (haskey $dmap $t) }}
+{{ $dmap = mapset $dmap $t (list .) }}
+{{ else }}
+{{ $dmap = mapset $dmap $t (listadd (index $dmap $t) .) }}
+{{ end }}
+{{ end }}
+<div>
+    <ul>
+        {{ range $k, $v := $dmap }}
 
+        <li>
+            <b>{{$k}}</b>
+            <ul>
+                {{ range $v }}
+                <li><a href="{{ .Href }}">{{ .Title }}</a></li>
+                {{ end }}
+            </ul>
+        </li>
+        {{ end }}
+    </ul>
+</div>
 
 <div>
     <input type="text" id="search-text" onkeyup="submitSearchDelayed(300)" placeholder="Search" />
@@ -31,6 +54,8 @@
     var searchTimer = null
 
     const kwminlen = "{{.Site.Index.MinKeywordLength}}"
+
+
 
     const resultContainer = document.getElementById("search-results")
 
@@ -100,7 +125,7 @@
         searchTimer = setTimeout(submitSearch, ms)
     }
 
-    loadIndex().then(() => {
+    loadIndex("{{href `index.json` }}").then(() => {
         var query = getParameter("q")
         if (query) {
             document.getElementById("search-text").value = query
@@ -110,9 +135,8 @@
         if (tag) {
             submitTagged(tag)
         }
-
     })
 
 </script>
 
-{{ tpl "footer" }}
+{{ tpl "footer.html" }}

@@ -1,9 +1,9 @@
-{{ tpl "header" }}
+{{ tpl "header.html" }}
 
 <em>Updated at {{ ftime .Post.UpdatedAt }}, created at {{ ftime .Post.CreatedAt }}</em>
 
-{{ tpl "post-tags"}}
+{{ tpl "post-tags.html"}}
 
 {{ .Post.Body }}
 
-{{ tpl "footer" }}
+{{ tpl "footer.html" }}

@@ -1,5 +1,6 @@
 ---
 title: Posts Placeholder
+skip_index: true
 ---
 
 # Nothing

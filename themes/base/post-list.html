@@ -1,10 +1,10 @@
-{{ tpl "header" }}
+{{ tpl "header.html" }}
 
 <h1>Posts</h1>
 {{ range .Page.Posts }}
 
 <h2><a href="{{.Href}}">{{ .Title }}</a></h2>
-{{ tpl "post-tags" "Tags" .Tags }}
+{{ tpl "post-tags.html" "Tags" .Tags }}
 <p>{{ .Body }}</p>
 {{ end }}
 
@@ -20,4 +20,4 @@
 <a href="post-list-{{ add .Page.Number 1 }}.html">Next</a>
 {{ end }}
 
-{{ tpl "footer" }}
+{{ tpl "footer.html" }}

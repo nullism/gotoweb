@@ -26,7 +26,7 @@ func (b *Builder) RenderFile(tplPath string, funcMap map[string]any, content *Re
 	return b.Render(tplPath, funcMap, bs, content)
 }
 
-// RenderSource renders a template with the given content.
+// RenderSource renders a source template with the given content.
 func (b *Builder) RenderSource(tplPath string, content *RenderContext) (string, error) {
 	return b.RenderFile(tplPath, b.getSourceFuncMap(), content)
 }

@@ -72,7 +72,7 @@ func (b *Builder) BuildExtraPages() error {
 		sourcePath := b.files.Join(b.site.SourceDir, tpl+".md")
 
 		if _, err := b.files.Stat(sourcePath); err == nil {
-			p, err := b.postFromSource(sourcePath)
+			p, err := b.postFromPath(sourcePath)
 			if err != nil {
 				log.Error("Could not render template", "error", err)
 				return err
@@ -117,6 +117,11 @@ func (b *Builder) BuildPosts() error {
 			return nil
 		}
 
+		// skip helper templates
+		if strings.HasPrefix(path, b.files.Join(b.site.SourceDir, config.HelpersDir)) {
+			return nil
+		}
+
 		// name with subdirectories included, leading slash removed
 		subName := strings.TrimPrefix(strings.TrimPrefix(path, b.site.SourceDir), "/")
 
@@ -128,7 +133,7 @@ func (b *Builder) BuildPosts() error {
 		plain := strings.TrimSuffix(subName, b.files.Ext(d.Name()))
 
 		outPath := b.files.Join(b.site.PublicDir, plain+".html")
-		post, err := b.postFromSource(path)
+		post, err := b.postFromPath(path)
 		if err != nil {
 			return err
 		}

@@ -1,8 +1,7 @@
 ---
 title: Creating Your First Post
 tags: [authoring]
-created_at: 2024-01-02 16:00:00
-updated_at: 2024-07-08 12:00:00
+created_at: 2024-07-01 16:30:00
 ---
 
 # Creating a post
@@ -37,6 +36,9 @@ _Note: to be considered configuration, the very first line of the file must star
   * Example: `tags: [my-first-post, hello]`
 * `skip_publish` - If this is set to true, the post will not be published or added to the search index.
 * `skip_index` - If true the post will not be searchable.
+* `created_at` - A date or datetime that the post was created, defaults to the file's modified time.
+  * Example: `created_at: 2024-01-01` or `created_at: 2024-01-02 16:00:00`
+* `updated_at` - A date or datetime that the post was updated, defaults to the file`s modified time.
 
 ## Run build
 

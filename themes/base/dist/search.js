@@ -1,7 +1,7 @@
 var indexData = null
 
-function loadIndex() {
-  return fetch("/index.json")
+function loadIndex(url) {
+  return fetch(url)
     .then(response => response.json())
     .then(data => {
       indexData = data

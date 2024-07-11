@@ -19,85 +19,76 @@ func Test_postFromBytes(t *testing.T) {
 	assert.Equal(t, "test", post.Title)
 }
 
-func Test_parsePostConfig(t *testing.T) {
-
+func Test_getPostConfig(t *testing.T) {
 	tests := []struct {
-		name       string
-		post       *Post
-		body       string
-		want       *Post
-		wantString string
-		wantErr    bool
+		name     string
+		body     []byte
+		want     *PostConfig
+		wantText string
+		wantErr  bool
 	}{
 		{
 			"simple test with title",
-			&Post{Title: "replaceme"},
-			"---\ntitle: \"Hello World\"\n---\nASDFASDF",
-			&Post{Title: "Hello World"},
+			[]byte("---\ntitle: \"Hello World\"\n---\nASDFASDF"),
+			&PostConfig{Title: "Hello World"},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test with tags",
-			&Post{Title: ""},
-			"---\ntags: [a, b, c]\n---\nASDFASDF",
-			&Post{Title: "", Tags: []string{"a", "b", "c"}},
+			[]byte("---\ntags: [a, b, c]\n---\nASDFASDF"),
+			&PostConfig{Tags: []string{"a", "b", "c"}},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test skip publish and skip index",
-			&Post{Title: "foo"},
-			"---\nskip_publish: true\nskip_index: true\n---\nASDFASDF",
-			&Post{Title: "foo", SkipPublish: true, SkipIndex: true},
+			[]byte("---\nskip_publish: true\nskip_index: true\n---\nASDFASDF"),
+			&PostConfig{SkipPublish: true, SkipIndex: true},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test with unparsable header",
-			&Post{Title: "asdf"},
-			"\n---\ntitle: [123]\n---\nASDFASDF",
-			&Post{Title: "asdf"},
+			[]byte("\n---\ntitle: [123]\n---\nASDFASDF"),
+			&PostConfig{},
 			"\n---\ntitle: [123]\n---\nASDFASDF",
 			false,
 		},
 		{
 			"empty test no match",
-			&Post{Title: "foo"},
-			`ASD FASDF`,
-			&Post{Title: "foo"},
+			[]byte(`ASD FASDF`),
+			&PostConfig{},
 			`ASD FASDF`,
 			false,
 		},
 		{
 			"test with invalid title",
-			&Post{Title: "foo"},
-			"---\ntitle: [123]\n---\nASD FASDF",
+			[]byte("---\ntitle: [123]\n---\nASD FASDF"),
 			nil,
-			``,
+			"",
 			true,
 		},
 		{
 			"test double header",
-			&Post{Title: "foo"},
-			"---\ntitle: foo\n---\nASD FASDF\n\n#foo\n---\ntitle: bar\n---\n",
-			&Post{Title: "foo"},
+			[]byte("---\ntitle: foo\n---\nASD FASDF\n\n#foo\n---\ntitle: bar\n---\n"),
+			&PostConfig{Title: "foo"},
 			"\nASD FASDF\n\n#foo\n---\ntitle: bar\n---\n",
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := parsePostConfig(tt.post, []byte(tt.body))
+			got, text, err := postConfigFromBytes(tt.body)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parsePostConfig() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("getPostConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parsePostConfig() got = %v, want %v", got, tt.want)
+				t.Errorf("getPostConfig() = %v, want %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(string(got1), string(tt.wantString)) {
-				t.Errorf("parsePostConfig() got1 = %v, want %v", string(got1), tt.wantString)
+			if text != tt.wantText {
+				t.Errorf("getPostConfig() = `%v`, want `%v`", text, tt.wantText)
 			}
 		})
 	}

@@ -25,28 +25,70 @@ type Post struct {
 	markdown    string
 }
 
+type PostConfig struct {
+	Title       string
+	Blurb       string
+	Tags        []string
+	SkipIndex   bool `yaml:"skip_index"`
+	SkipPublish bool `yaml:"skip_publish"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 // postRe requires the start (---) to be on the first line.
 var postRe = regexp.MustCompile(`(?m)([ -~\n]*?)^---$((.|\r?\n)*?)^---$((.|\r?\n)*)`)
 
 // regex to strip html tags
 var tagRe = regexp.MustCompile(`<[^>]*>`)
 
-func parsePostConfig(post *Post, body []byte) (*Post, []byte, error) {
-	text := body
+func (p *Post) UpdateFromConfig(pc *PostConfig) {
+	if pc.Title != "" {
+		p.Title = pc.Title
+	}
+	if pc.Blurb != "" {
+		p.Blurb = pc.Blurb
+	}
+	if pc.Tags != nil {
+		p.Tags = pc.Tags
+	}
+	if pc.SkipIndex {
+		p.SkipIndex = true
+	}
+	if pc.SkipPublish {
+		p.SkipPublish = true
+	}
+	if !pc.CreatedAt.IsZero() {
+		p.CreatedAt = pc.CreatedAt
+	}
+	if !pc.UpdatedAt.IsZero() {
+		p.UpdatedAt = pc.UpdatedAt
+	}
+}
+
+func postConfigFromBytes(body []byte) (*PostConfig, string, error) {
+	pconf := &PostConfig{}
 	matches := postRe.FindStringSubmatch(string(body))
 	if matches != nil {
 		if matches[1] == "" {
 
 			if len(matches) > 2 {
-				text = []byte(matches[4])
-				err := yaml.Unmarshal([]byte(matches[2]), post)
+				err := yaml.Unmarshal([]byte(matches[2]), pconf)
 				if err != nil {
-					return nil, []byte(""), fmt.Errorf("could not parse yaml config: %w", err)
+					return nil, "", fmt.Errorf("could not parse yaml config: %w", err)
 				}
+				return pconf, matches[4], nil
 			}
 		}
 	}
-	return post, text, nil
+	return &PostConfig{}, string(body), nil
+}
+
+func (b *Builder) postConfigFromPath(path string) (*PostConfig, string, error) {
+	bs, err := b.files.ReadFile(path)
+	if err != nil {
+		return nil, "", fmt.Errorf("could not read source %v: %v", path, err)
+	}
+	return postConfigFromBytes(bs)
 }
 
 func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
@@ -62,12 +104,24 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 		post.UpdatedAt = fi.ModTime()
 	}
 
-	post, bs, err = parsePostConfig(post, bs)
+	pconf, body, err := postConfigFromBytes(bs)
 	if err != nil {
 		return nil, err
 	}
+	bs = []byte(body)
+	post.UpdateFromConfig(pconf)
 
-	str, err := b.Render(sourcePath, b.getSourceFuncMap(), bs, b.context)
+	href, err := b.prefix(strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1))
+	if err != nil {
+		return nil, err
+	}
+	post.Href = href
+
+	newCtx := b.context // copy the context so we don't modify the original with something like `plink`
+	if b.context != nil {
+		newCtx.Post = post
+	}
+	str, err := b.Render(sourcePath, b.getSourceFuncMap(), bs, newCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -88,15 +142,10 @@ func (b *Builder) postFromBytes(bs []byte, sourcePath string) (*Post, error) {
 		post.Blurb = string(blurbBytes[:min(200, len(blurbBytes))])
 	}
 
-	href, err := b.prefix(strings.Replace(strings.TrimPrefix(sourcePath, b.site.SourceDir), ".md", ".html", 1))
-	if err != nil {
-		return nil, err
-	}
-	post.Href = href
 	return post, err
 }
 
-func (b *Builder) postFromSource(sourcePath string) (*Post, error) {
+func (b *Builder) postFromPath(sourcePath string) (*Post, error) {
 
 	bs, err := b.files.ReadFile(sourcePath)
 	if err != nil {

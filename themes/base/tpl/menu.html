@@ -7,7 +7,7 @@
         {{.Title }}
         {{ end }}
         {{ if .Children }}
-        {{ tpl "menu" "Items" .Children }}
+        {{ tpl "menu.html" "Items" .Children }}
         {{ end }}
     </li>
     {{ end}}

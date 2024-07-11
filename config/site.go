@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -37,17 +38,18 @@ func (s SiteConfig) ThemeDir() string {
 	return s.files.Join(s.RootDir, s.Theme.Path)
 }
 
-// UpdatePrefixes recursively adds the site prefix to the menu items.
-func (s *SiteConfig) UpdatePrefixes(item *MenuItem) {
+// UpdateMenuPrefixes recursively adds the site prefix to the menu items.
+func (s *SiteConfig) UpdateMenuPrefixes(item *MenuItem) {
 	if !s.Menu.AutoPrefix {
 		return
 	}
-	if !strings.HasPrefix(item.Href, "http") {
-		item.Href = s.Prefix + item.Href
+	if item.Href != "" && !strings.HasPrefix(item.Href, "http://") && !strings.HasPrefix(item.Href, "https://") {
+		href, _ := url.JoinPath(s.Prefix, item.Href)
+		item.Href = href
 	}
 	if item.Children != nil {
 		for _, child := range item.Children {
-			s.UpdatePrefixes(child)
+			s.UpdateMenuPrefixes(child)
 		}
 	}
 }
@@ -84,7 +86,7 @@ func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
 	// Add site prefix if necessary
 	if s.Menu.AutoPrefix && s.Menu.Items != nil {
 		for _, itm := range s.Menu.Items {
-			s.UpdatePrefixes(itm)
+			s.UpdateMenuPrefixes(itm)
 		}
 	}
 

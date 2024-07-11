@@ -15,8 +15,11 @@ type FileSystem interface {
 	Base(string) string
 	Copy(string, string, os.FileMode) error
 	Dir(string) string
+	// Exists reports whether the file or folder at path exists.
 	Exists(string) bool
+	// Ext returns the file name extension used by path.
 	Ext(string) string
+	// FindInParent searches for a file in the current directory and then in [maxDirCount] parent directories.
 	FindInParent(string, int) (string, error)
 	Join(elem ...string) string
 	IsAbs(string) bool

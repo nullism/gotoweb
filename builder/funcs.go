@@ -12,29 +12,48 @@ import (
 
 func (b *Builder) getThemeFuncMap() map[string]any {
 	return map[string]any{
-		"tpl":   b.tplTheme,
-		"map":   b.toMap,
-		"sub":   b.sub,
-		"add":   b.add,
-		"href":  b.href,
-		"list":  b.list,
-		"ftime": b.time,
+		"add":     b.add,
+		"ftime":   b.ftime,
+		"haskey":  b.mapHasKey,
+		"href":    b.href,
+		"tpl":     b.tplTheme,
+		"map":     b.toMap,
+		"mapset":  b.mapSet,
+		"sub":     b.sub,
+		"list":    b.list,
+		"listadd": b.listAdd,
 	}
 }
 
 func (b *Builder) getSourceFuncMap() map[string]any {
 	return map[string]any{
-		"add":   b.add,
-		"sub":   b.sub,
-		"map":   b.toMap,
-		"plink": b.postLink,
-		"href":  b.href,
-		"list":  b.list,
+		"add":     b.add,
+		"ftime":   b.ftime,
+		"href":    b.href,
+		"sub":     b.sub,
+		"map":     b.toMap,
+		"mapset":  b.mapSet,
+		"plink":   b.postLink,
+		"list":    b.list,
+		"listadd": b.listAdd,
+		"tpl":     b.tplSource,
 	}
 }
 
 func (b *Builder) add(num, amount int) int {
 	return num + amount
+}
+
+func (b *Builder) ftime(t time.Time, fs ...string) string {
+	for _, f := range fs {
+		return t.Format(f)
+	}
+	return t.Format(b.site.TimeFormat)
+}
+
+func (b *Builder) mapHasKey(m map[string]any, key string) bool {
+	_, ok := m[key]
+	return ok
 }
 
 func (b *Builder) href(href string, params ...any) (string, error) {
@@ -63,16 +82,29 @@ func (b *Builder) list(items ...any) ([]any, error) {
 	return items, nil
 }
 
+func (b *Builder) listAdd(items []any, item any) []any {
+	return append(items, item)
+}
+
+func (b *Builder) mapSet(m map[string]any, key string, value any) map[string]any {
+	m[key] = value
+	return m
+}
+
 func (b *Builder) postLink(name string) (string, error) {
 	path := b.files.Join(b.site.SourceDir, name+".md")
 	if !b.files.Exists(path) {
 		return "", fmt.Errorf("post %s does not exist", path)
 	}
-	p, err := b.postFromSource(path)
+	pconf, _, err := b.postConfigFromPath(path)
 	if err != nil {
 		return "", err
 	}
-	title := p.Title
+	title := pconf.Title
+	if title == "" {
+		title = name
+	}
+
 	href, err := b.prefix(name + ".html")
 	if err != nil {
 		return "", err
@@ -81,7 +113,7 @@ func (b *Builder) postLink(name string) (string, error) {
 }
 
 func (b *Builder) prefix(href string) (string, error) {
-	if strings.HasPrefix(href, "http") {
+	if strings.HasPrefix(href, "http://") || strings.HasPrefix(href, "https://") {
 		return href, nil
 	}
 	if !strings.HasPrefix(href, "/") {
@@ -99,8 +131,14 @@ func (b *Builder) sub(num, amount int) int {
 	return num - amount
 }
 
-func (b *Builder) time(t time.Time) string {
-	return t.Format(b.site.TimeFormat)
+func (b *Builder) tplSource(name string, pairs ...any) (string, error) {
+	m, err := b.toMap(pairs...)
+	if err != nil {
+		return "", err
+	}
+	path := b.files.Join(b.site.SourceDir, config.HelpersDir, name)
+	b.context.Args = m
+	return b.RenderSource(path, b.context)
 }
 
 func (b *Builder) tplTheme(name string, pairs ...any) (string, error) {
@@ -108,7 +146,7 @@ func (b *Builder) tplTheme(name string, pairs ...any) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := b.files.Join(b.site.ThemeDir(), config.HelpersDir, name+config.TemplateExt)
+	path := b.files.Join(b.site.ThemeDir(), config.HelpersDir, name)
 	b.context.Args = m
 	return b.RenderTheme(path, b.context)
 }
@@ -119,7 +157,7 @@ func (b *Builder) toMap(pairs ...any) (map[string]any, error) {
 		return nil, errors.New("misaligned map")
 	}
 
-	m := make(map[string]any, len(pairs)/2)
+	m := make(map[string]any)
 
 	for i := 0; i < len(pairs); i += 2 {
 		key, ok := pairs[i].(string)

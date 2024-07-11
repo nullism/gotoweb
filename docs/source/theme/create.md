@@ -49,6 +49,6 @@ Let's create `tpl/image.html` that shows an image and caption.
 To use the template, we'd do:
 
 ```
-{{ `{{ tpl "image" "Src" "/path/to/my-image.png" "Caption" "My caption" }}` }}
+{{ `{{ tpl "image.html" "Src" "/path/to/my-image.png" "Caption" "My caption" }}` }}
 ```
 

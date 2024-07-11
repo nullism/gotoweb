@@ -1,7 +1,7 @@
 title: Gotoweb Documentation
 
 # public_directory: public
-# uri_prefix: /docs
+uri_prefix: /docs
 
 copyright: "2024 Gotoweb"
 version: 1
