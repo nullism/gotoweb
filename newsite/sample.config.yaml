@@ -16,6 +16,10 @@ copyright: {{ .Title }} {{ .Year }}
 #  Default: public
 # public_directory: public
 
+# Language code for the site (in html lang attribute)
+#  Default: en
+# language: en
+
 # Search index configuration
 index:
   # Minimum keyword length for the search index

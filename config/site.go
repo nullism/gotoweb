@@ -22,10 +22,11 @@ type SiteConfig struct {
 	ConfigPath string // path to config.yaml
 	Homepage   string
 	Index      IndexConfig
-	PublicDir  string
+	PublicDir  string `yaml:"public_directory"`
 	RootDir    string
 	SourceDir  string
 	// ThemeDir   string `yaml:"theme_directory,ignore"`
+	Language     string `default:"en"`
 	Prefix       string `yaml:"uri_prefix"`
 	Search       SearchConfig
 	Version      string
