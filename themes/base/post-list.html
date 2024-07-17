@@ -10,14 +10,14 @@
 
 
 
-{{ if gt .Page.Number 1 }}
-<a href="post-list-{{ sub .Page.Number 1 }}.html">Previous</a>
+{{ if .Page.PreviousHref }}
+<a href="{{.Page.PreviousHref}}">Previous</a>
 {{ end }}
 
 <b>{{ .Page.Number }}</b> of <b>{{ .Page.Total }}</b>
 
-{{ if lt .Page.Number .Page.Total }}
-<a href="post-list-{{ add .Page.Number 1 }}.html">Next</a>
+{{ if .Page.NextHref }}
+<a href="{{.Page.NextHref}}">Next</a>
 {{ end }}
 
 {{ tpl "footer.html" }}

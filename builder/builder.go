@@ -171,17 +171,34 @@ func (b *Builder) BuildPostLists() error {
 	log.Info("Building post pages", "posts per page", postsPerPage, "total pages", pageCount, "total posts", postCount)
 	postI := 0
 	for pnum := range pageCount {
+
 		b.context.Page = &Page{
 			Number: pnum + 1,
 			Total:  pageCount,
 			Posts:  []*Post{},
 		}
+
 		for i := 0; i < postsPerPage; i++ {
 			if postI >= postCount {
 				break
 			}
 			b.context.Page.Posts = append(b.context.Page.Posts, b.context.Posts[postI])
 			postI++
+		}
+
+		if pnum < pageCount-1 {
+			nextHref, err := b.prefix(fmt.Sprintf("post-list-%d.html", pnum+2))
+			if err != nil {
+				return err
+			}
+			b.context.Page.NextHref = nextHref
+		}
+		if pnum > 0 {
+			pastHref, err := b.prefix(fmt.Sprintf("post-list-%d.html", pnum))
+			if err != nil {
+				return err
+			}
+			b.context.Page.PreviousHref = pastHref
 		}
 
 		tplPath := b.files.Join(b.site.ThemeDir(), "post-list.html")
