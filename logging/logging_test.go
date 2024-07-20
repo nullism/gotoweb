@@ -1,9 +1,11 @@
 package logging
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -27,4 +29,16 @@ func Test_GetLogger(t *testing.T) {
 			&CLIHandler{slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})},
 		),
 	})
+}
+
+func Test_Handle(t *testing.T) {
+	// Test case 1: Handle log record
+	handler := &CLIHandler{}
+	record := slog.Record{
+		Level:   slog.LevelDebug,
+		Time:    time.Now(),
+		Message: "message",
+	}
+	err := handler.Handle(context.Background(), record)
+	assert.NoError(t, err)
 }
