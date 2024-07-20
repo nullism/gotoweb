@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -163,6 +164,14 @@ func (b *Builder) BuildPosts() error {
 
 func (b *Builder) BuildPostLists() error {
 
+	posts := b.context.Posts
+
+	// sort by date, ascending
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].CreatedAt.Unix() < posts[j].CreatedAt.Unix()
+	})
+
+	b.context.Posts = posts
 	postCount := len(b.context.Posts)
 	postsPerPage := b.site.PostsPerPage
 
