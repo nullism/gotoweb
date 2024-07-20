@@ -1,0 +1,5 @@
+
+on: [push, pull_request]
+
+- name: Tests
+  uses: gwatts/go-coverage-action@v2.0.0
