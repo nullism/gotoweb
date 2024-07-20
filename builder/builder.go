@@ -101,6 +101,7 @@ func (b *Builder) BuildPostPreview(outPath string) error {
 
 }
 
+// BuildPosts builds all the posts in the source directory.
 func (b *Builder) BuildPosts() error {
 	tplPath := b.files.Join(b.site.ThemeDir(), "post.html")
 	_, err := b.files.Stat(b.site.PublicDir)
@@ -162,6 +163,7 @@ func (b *Builder) BuildPosts() error {
 	return err
 }
 
+// BuildPostLists builds paginated lists of posts.
 func (b *Builder) BuildPostLists() error {
 
 	posts := b.context.Posts
@@ -220,6 +222,20 @@ func (b *Builder) BuildPostLists() error {
 	return nil
 }
 
+// SyncUploads copies the uploads directory from the source to the public directory.
+func (b *Builder) SyncUploads() error {
+	uploadsDir := b.files.Join(b.site.SourceDir, config.UploadsDir)
+	if !b.files.Exists(uploadsDir) {
+		log.Warn("no uploads directory found", "path", uploadsDir)
+		return nil
+	}
+	uploadsToDir := b.files.Join(b.site.PublicDir, config.UploadsDir)
+	log.Info("syncing uploads", "from", uploadsDir, "to", uploadsToDir)
+	err := b.files.Copy(uploadsDir, uploadsToDir, 0755)
+	return err
+
+}
+
 // BuildAll builds all the pages and posts for the site.
 func (b *Builder) BuildAll() error {
 	start := time.Now()
@@ -251,6 +267,12 @@ func (b *Builder) BuildAll() error {
 
 	err = b.BuildPostLists()
 	if err != nil {
+		return err
+	}
+
+	err = b.SyncUploads()
+	if err != nil {
+		log.Error("could not sync uploads", "error", err)
 		return err
 	}
 
