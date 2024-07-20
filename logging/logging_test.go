@@ -22,5 +22,9 @@ func Test_GetLogger(t *testing.T) {
 	// Test case 1: Get logger
 	logger := GetLogger()
 	assert.NotNil(t, logger)
-	assert.Equal(t, logger, &CLIHandler{slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})})
+	assert.Equal(t, logger, &Logger{
+		slog.New(
+			&CLIHandler{slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: &logLevel})},
+		),
+	})
 }
