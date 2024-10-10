@@ -15,7 +15,7 @@ index:
 homepage: post-list-1.html
 
 theme:
-  path: ../themes/base
+  path: ../themes/dark
 
   args:
     style: dark

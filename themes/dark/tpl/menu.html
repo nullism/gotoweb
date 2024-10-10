@@ -1,0 +1,50 @@
+<nav class="navbar">
+    <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start">
+            {{ range .Args.Items }}
+
+            {{ if .Children}}
+
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link" {{if .Href}}href="{{.Href}}" target="{{.Target}}" {{end}}>
+                    {{.Title}}
+                </a>
+                <div class="navbar-dropdown">
+                    {{ range .Children }}
+                    <a class="navbar-item" {{if .Href}}href="{{.Href}}" target="{{.Target}}" {{end}}>
+                        {{.Title}}
+                    </a>
+                    {{ end }}
+                </div>
+            </div>
+
+            {{ else }}
+
+            <a class="navbar-item" {{if .Href}}href="{{.Href}}" target="{{.Target}}" {{end}}>
+                {{.Title}}
+            </a>
+
+            {{ end }}
+            {{ end }}
+
+        </div>
+    </div>
+</nav>
+
+{{ if not .Args.Items }}
+<ul>
+
+    {{ range .Args.Items }}
+    <li>
+        {{ if .Href }}
+        <a href="{{.Href}}" target="{{.Target}}">{{.Title}}</a>
+        {{ else }}
+        {{.Title }}
+        {{ end }}
+        {{ if .Children }}
+        {{ tpl "menu.html" "Items" .Children }}
+        {{ end }}
+    </li>
+    {{ end}}
+</ul>
+{{ end }}

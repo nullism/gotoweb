@@ -19,7 +19,7 @@ type SiteConfig struct {
 	Title      string
 	Theme      ThemeConfig
 	Copyright  string
-	ConfigPath string // path to config.yaml
+	ConfigPath string // path to config yaml
 	Homepage   string
 	Index      IndexConfig
 	PublicDir  string `yaml:"public_directory"`
@@ -56,7 +56,7 @@ func (s *SiteConfig) UpdateMenuPrefixes(item *MenuItem) {
 }
 
 func SiteFromConfig(files fsys.FileSystem) (*SiteConfig, error) {
-	confPath, err := files.FindInParent("config.yaml", 3)
+	confPath, err := files.FindInParent(ConfigFile, 3)
 	if err != nil {
 		return nil, err
 	}

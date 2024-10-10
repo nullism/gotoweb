@@ -1,0 +1,80 @@
+{{ tpl "header.html" }}
+
+<div class="">
+
+    <section class="section">
+        <p class="title">Posts</p>
+        {{ range .Page.Posts }}
+        <div class="card">
+            <div class="card-content">
+                <div class="content">
+                    <h2><a href="{{.Href}}">{{ .Title }}</a></h2>
+                    {{ tpl "post-tags.html" "Tags" .Tags }}
+                    <p>{{ .Body }}</p>
+                </div>
+            </div>
+        </div>
+        {{ end }}
+    </section>
+
+    <div class="container">
+        <nav class="pagination is-centered">
+
+
+            <a {{ if .Page.PreviousHref }}href="{{.Page.PreviousHref}}" {{end}}
+                class="pagination-previous {{ if not .Page.PreviousHref }}is-disabled{{end}}">
+                Previous
+            </a>
+
+            <ul class="pagination-list">
+                <li>
+                    <a href="{{ href `post-list-1.html`}}"
+                        class="pagination-link {{ if eq .Page.Number 1}}is-current{{end}}">
+                        1
+                    </a>
+                </li>
+
+                {{ if lt .Page.Number .Page.Total }}
+
+                {{ if gt .Page.Number 1 }}
+                {{ if gt .Page.Number 2 }}
+                <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {{ end }}
+
+                <li>
+                    <a class="pagination-link is-current">
+                        {{.Page.Number}}
+                    </a>
+                </li>
+
+                {{ if lt .Page.Number (sub .Page.Total 1)}}
+                <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {{ end }}
+
+                {{ end }}
+                {{ end }}
+
+                {{ if (or (eq .Page.Number 1) (eq .Page.Number .Page.Total)) }}
+                <li><span class="pagination-ellipsis">&hellip;</span></li>
+                {{ end }}
+
+
+                <li>
+                    <a href="{{ href (printf `post-list-%v.html` .Page.Total)}}"
+                        class="pagination-link {{ if eq .Page.Number .Page.Total}}is-current{{end}}">
+                        {{.Page.Total}}
+                    </a>
+                </li>
+            </ul>
+
+
+            <a {{ if .Page.NextHref }}href="{{.Page.NextHref}}" {{end}}
+                class="pagination-next {{ if not .Page.NextHref}}is-disabled{{end}}">
+                Next
+            </a>
+
+        </nav>
+    </div>
+</div>
+
+{{ tpl "footer.html" }}

@@ -1,0 +1,16 @@
+<html lang="{{ .Site.Language }}" class="theme-dark">
+
+<head>
+    <title>
+        {{ if .Post }}{{ .Post.Title }}{{ else }}{{ .Site.Title }}{{ end }}
+    </title>
+    <!-- include styles -->
+    <link rel="stylesheet" href="{{ href `dist/bulma.min.css` }}">
+    <link rel="stylesheet" href="{{ href `dist/custom.css` }}">
+    <!-- include search.js -->
+    <script src="{{ href `dist/search.js` }}"></script>
+</head>
+
+<body>
+
+    {{ tpl "menu.html" "Items" .Site.Menu.Items }}

@@ -27,7 +27,7 @@ type configContext struct {
 
 var log = logging.GetLogger()
 
-//go:embed sample.config.yaml
+//go:embed sample.gwconfig.yaml
 var sampleYaml []byte
 
 func New(name string, files fsys.FileSystem) (*NewSite, error) {
@@ -47,7 +47,7 @@ func New(name string, files fsys.FileSystem) (*NewSite, error) {
 		return nil, err
 	}
 
-	tpl, err := template.New("config.yaml").Parse(string(sampleYaml))
+	tpl, err := template.New(config.ConfigFile).Parse(string(sampleYaml))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse sample yaml: %w", err)
 	}
@@ -62,9 +62,9 @@ func New(name string, files fsys.FileSystem) (*NewSite, error) {
 		return nil, fmt.Errorf("could not execute template: %w", err)
 	}
 
-	err = files.WriteFile(files.Join(path, "config.yaml"), bb.Bytes(), 0755)
+	err = files.WriteFile(files.Join(path, config.ConfigFile), bb.Bytes(), 0755)
 	if err != nil {
-		return nil, fmt.Errorf("could not create config.yaml: %w", err)
+		return nil, fmt.Errorf("could not create %v: %w", config.ConfigFile, err)
 	}
 
 	ns := &NewSite{

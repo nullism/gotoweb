@@ -1,0 +1,14 @@
+{{ tpl "header.html" }}
+
+<section class="section">
+    <div class="content">
+        <em>Updated at {{ ftime .Post.UpdatedAt }}, created at {{ ftime .Post.CreatedAt }}</em>
+
+        {{ tpl "post-tags.html"}}
+
+        {{ .Post.Body }}
+
+    </div>
+</section>
+
+{{ tpl "footer.html" }}

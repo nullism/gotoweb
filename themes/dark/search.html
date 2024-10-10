@@ -1,0 +1,153 @@
+{{ tpl "header.html" }}
+
+<div class="container">
+
+    <div class="columns">
+        <div class="column is-2">
+            {{ $dmap := map }}
+            {{ range .Posts }}
+            {{ $t := ftime .CreatedAt "2006 01/02" }}
+            {{ if not (haskey $dmap $t) }}
+            {{ $dmap = mapset $dmap $t (list .) }}
+            {{ else }}
+            {{ $dmap = mapset $dmap $t (listadd (index $dmap $t) .) }}
+            {{ end }}
+            {{ end }}
+            <div>
+                <ul>
+                    {{ range $k, $v := $dmap }}
+
+                    <li>
+                        <b>{{$k}}</b>
+                        <ul>
+                            {{ range $v }}
+                            <li><a href="{{ .Href }}">{{ .Title }}</a></li>
+                            {{ end }}
+                        </ul>
+                    </li>
+                    {{ end }}
+                </ul>
+            </div>
+        </div>
+
+        <div class="column">
+            <section class="section">
+
+                <div class="field has-addons">
+                    <p class="control">
+                        <input type="text" class="input" id="search-text" onkeyup="submitSearchDelayed(300)"
+                            placeholder="Search" />
+                    </p>
+                    <p class="control">
+                        <button class="button" onclick="submitSearch()">Search</button>
+                    </p>
+                </div>
+
+                <div>
+                    {{ range $k, $v := .TagMap }}
+                    <span class="tag">
+                        <a href="{{ href `search.html` `tag` $k }}">{{$k}} {{$v}}</a>
+                    </span>
+                    {{ end }}
+                </div>
+
+                <div id="search-results"></div>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        /* Search code must load after elements are rendered */
+
+        // debounce timer
+        var searchTimer = null
+
+        const kwminlen = "{{.Site.Index.MinKeywordLength}}"
+
+
+
+        const resultContainer = document.getElementById("search-results")
+
+        function getParameter(name) {
+            var result = null
+            var temp = []
+            var items = location.search.substr(1).split("&")
+            for (var idx = 0; idx < items.length; idx++) {
+                temp = items[idx].split("=")
+                if (temp[0] === name) {
+                    result = decodeURIComponent(temp[1])
+                    result = result.replace(/\+/g, " ")
+                }
+            }
+            return result
+        }
+
+        function loadPreviews(hrefs) {
+            console.log("fetching ", hrefs)
+            fetch(hrefs[0] + ".preview").then(response => response.text()).then(text => {
+                document.getElementById("search-results").insertAdjacentHTML('beforeend', text)
+                if (hrefs.length > 1) {
+                    loadPreviews(hrefs.slice(1))
+                }
+            })
+        }
+
+        function clearResults() {
+            resultContainer.innerHTML = ""
+        }
+
+        function submitTagged(tag) {
+            clearResults()
+            var hits = tagged(tag)
+            var hrefs = []
+            for (var i = 0; i < hits.length; i++) {
+                hrefs.push(hits[i].href)
+            }
+            if (hrefs.length == 0) {
+                resultContainer.innerHTML = "<p>no results found for tag: " + tag + "</p>"
+                return
+            }
+            loadPreviews(hrefs)
+        }
+
+        function submitSearch() {
+            var searchText = document.getElementById("search-text").value
+            clearResults()
+            if (searchText.length <= kwminlen) {
+                return
+            }
+
+            var hits = search(searchText)
+            var hrefs = []
+            for (var i = 0; i < hits.length; i++) {
+                hrefs.push(hits[i].href)
+            }
+            if (hrefs.length == 0) {
+                resultContainer.innerHTML = "<p>no results found for query: " + searchText + "</p>"
+                return
+            }
+            loadPreviews(hrefs)
+        }
+
+        function submitSearchDelayed(ms) {
+            clearTimeout(searchTimer)
+            searchTimer = setTimeout(submitSearch, ms)
+        }
+
+        loadIndex("{{href `index.json` }}").then(() => {
+            var query = getParameter("q")
+            if (query) {
+                document.getElementById("search-text").value = query
+                submitSearch()
+            }
+            var tag = getParameter("tag")
+            if (tag) {
+                submitTagged(tag)
+            }
+        })
+
+    </script>
+</div>
+
+{{ tpl "footer.html" }}

@@ -1,6 +1,6 @@
 package config
 
-const ConfigFile = "config.yaml"
+const ConfigFile = "gwconfig.yaml"
 const PublicDir = "public"
 const SourceDir = "source"
 const ThemesDir = "themes"

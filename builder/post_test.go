@@ -23,42 +23,42 @@ func Test_getPostConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		body     []byte
-		want     *PostConfig
+		want     *config.PostConfig
 		wantText string
 		wantErr  bool
 	}{
 		{
 			"simple test with title",
 			[]byte("---\ntitle: \"Hello World\"\n---\nASDFASDF"),
-			&PostConfig{Title: "Hello World"},
+			&config.PostConfig{Title: "Hello World"},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test with tags",
 			[]byte("---\ntags: [a, b, c]\n---\nASDFASDF"),
-			&PostConfig{Tags: []string{"a", "b", "c"}},
+			&config.PostConfig{Tags: []string{"a", "b", "c"}},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test skip publish and skip index",
 			[]byte("---\nskip_publish: true\nskip_index: true\n---\nASDFASDF"),
-			&PostConfig{SkipPublish: true, SkipIndex: true},
+			&config.PostConfig{SkipPublish: true, SkipIndex: true},
 			"\nASDFASDF",
 			false,
 		},
 		{
 			"test with unparsable header",
 			[]byte("\n---\ntitle: [123]\n---\nASDFASDF"),
-			&PostConfig{},
+			&config.PostConfig{},
 			"\n---\ntitle: [123]\n---\nASDFASDF",
 			false,
 		},
 		{
 			"empty test no match",
 			[]byte(`ASD FASDF`),
-			&PostConfig{},
+			&config.PostConfig{},
 			`ASD FASDF`,
 			false,
 		},
@@ -72,7 +72,7 @@ func Test_getPostConfig(t *testing.T) {
 		{
 			"test double header",
 			[]byte("---\ntitle: foo\n---\nASD FASDF\n\n#foo\n---\ntitle: bar\n---\n"),
-			&PostConfig{Title: "foo"},
+			&config.PostConfig{Title: "foo"},
 			"\nASD FASDF\n\n#foo\n---\ntitle: bar\n---\n",
 			false,
 		},

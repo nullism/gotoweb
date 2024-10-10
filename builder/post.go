@@ -9,6 +9,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"github.com/nullism/gotoweb/config"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,23 +26,14 @@ type Post struct {
 	markdown    string
 }
 
-type PostConfig struct {
-	Title       string
-	Blurb       string
-	Tags        []string
-	SkipIndex   bool `yaml:"skip_index"`
-	SkipPublish bool `yaml:"skip_publish"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
 // postRe requires the start (---) to be on the first line.
 var postRe = regexp.MustCompile(`(?m)([ -~\n]*?)^---$((.|\r?\n)*?)^---$((.|\r?\n)*)`)
 
 // regex to strip html tags
 var tagRe = regexp.MustCompile(`<[^>]*>`)
 
-func (p *Post) UpdateFromConfig(pc *PostConfig) {
+// UpdateFromConfig updates post properties fron a config.PostConfig object.
+func (p *Post) UpdateFromConfig(pc *config.PostConfig) {
 	if pc.Title != "" {
 		p.Title = pc.Title
 	}
@@ -65,8 +57,8 @@ func (p *Post) UpdateFromConfig(pc *PostConfig) {
 	}
 }
 
-func postConfigFromBytes(body []byte) (*PostConfig, string, error) {
-	pconf := &PostConfig{}
+func postConfigFromBytes(body []byte) (*config.PostConfig, string, error) {
+	pconf := &config.PostConfig{}
 	matches := postRe.FindStringSubmatch(string(body))
 	if matches != nil {
 		if matches[1] == "" {
@@ -80,10 +72,10 @@ func postConfigFromBytes(body []byte) (*PostConfig, string, error) {
 			}
 		}
 	}
-	return &PostConfig{}, string(body), nil
+	return &config.PostConfig{}, string(body), nil
 }
 
-func (b *Builder) postConfigFromPath(path string) (*PostConfig, string, error) {
+func (b *Builder) postConfigFromPath(path string) (*config.PostConfig, string, error) {
 	bs, err := b.files.ReadFile(path)
 	if err != nil {
 		return nil, "", fmt.Errorf("could not read source %v: %v", path, err)
