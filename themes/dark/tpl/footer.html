@@ -1,8 +1,10 @@
 <footer class="footer">
-    {{ if .Site.Copyright }}
-    <p>&copy; {{ .Site.Copyright }}</p>
-    {{ end }}
-    <small>powered by <a href="https://github.com/nullism/gotoweb">gotoweb</a></small>
+    <div class="content has-text-centered">
+        {{ if .Site.Copyright }}
+        <p>&copy; {{ .Site.Copyright }}</p>
+        {{ end }}
+        <small>powered by <a href="https://github.com/nullism/gotoweb">gotoweb</a></small>
+    </div>
 </footer>
 
 </body>

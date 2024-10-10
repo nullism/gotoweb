@@ -17,11 +17,12 @@ type Index struct {
 	KwMap          map[string]map[int]int `json:"kw"`
 	TagMap         map[string][]int       `json:"tm"`
 	DocMap         map[int]Document       `json:"docs"`
-	stopwords      []string
+	stopWords      []string
 	minKeyworldLen int
 }
 
 const titleKeywordValue = 5
+const tagKeywordValue = 2
 
 var htmlTagRe = regexp.MustCompile(`(?i)<[^>]*>|&[a-z0-9]+;`)
 var wordRe = regexp.MustCompile(`\w+`)
@@ -32,7 +33,7 @@ func New(minKeyworldLen int, stopwords []string) *Index {
 		DocMap:         make(map[int]Document),
 		TagMap:         make(map[string][]int),
 		KwMap:          make(map[string]map[int]int),
-		stopwords:      stopwords,
+		stopWords:      stopwords,
 		minKeyworldLen: minKeyworldLen,
 	}
 }
@@ -70,6 +71,7 @@ func (s *Index) Add(href, title, body string, tags []string) error {
 		if len(w) < s.minKeyworldLen {
 			continue
 		}
+
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
 			s.KwMap[strings.ToLower(w)] = make(map[int]int)
 		}
@@ -79,14 +81,21 @@ func (s *Index) Add(href, title, body string, tags []string) error {
 
 	words := wordRe.FindAllString(body, -1)
 	for _, w := range words {
-		if len(w) < s.minKeyworldLen {
+		if len(w) < s.minKeyworldLen || s.isStopWord(strings.ToLower(w)) {
 			continue
 		}
 		if _, ok := s.KwMap[strings.ToLower(w)]; !ok {
 			s.KwMap[strings.ToLower(w)] = make(map[int]int)
 		}
 		s.KwMap[strings.ToLower(w)][id] += 1
+	}
 
+	// add tags to index
+	for _, tag := range tags {
+		if _, ok := s.KwMap[strings.ToLower(tag)]; !ok {
+			s.KwMap[strings.ToLower(tag)] = make(map[int]int)
+		}
+		s.KwMap[strings.ToLower(tag)][id] += tagKeywordValue
 	}
 
 	s.CurrentId += 1
@@ -95,4 +104,13 @@ func (s *Index) Add(href, title, body string, tags []string) error {
 
 func (s *Index) ToJson() ([]byte, error) {
 	return json.Marshal(s)
+}
+
+func (s *Index) isStopWord(a string) bool {
+	for _, b := range s.stopWords {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }

@@ -26,9 +26,9 @@ type SiteConfig struct {
 	RootDir    string
 	SourceDir  string
 	// ThemeDir   string `yaml:"theme_directory,ignore"`
-	Language     string `default:"en"`
-	Prefix       string `yaml:"uri_prefix"`
-	Search       SearchConfig
+	Language     string       `default:"en"`
+	Prefix       string       `yaml:"uri_prefix"`
+	Search       SearchConfig `yaml:"search"`
 	Version      string
 	PostsPerPage int        `default:"2"`
 	Menu         MenuConfig `yaml:"menu"`
@@ -46,7 +46,7 @@ func (s *SiteConfig) UpdateMenuPrefixes(item *MenuItem) {
 	}
 	if item.Href != "" && !strings.HasPrefix(item.Href, "http://") && !strings.HasPrefix(item.Href, "https://") {
 		href, _ := url.JoinPath(s.Prefix, item.Href)
-		item.Href = href
+		item.Href, _ = url.PathUnescape(href)
 	}
 	if item.Children != nil {
 		for _, child := range item.Children {

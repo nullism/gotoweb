@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 				DocMap:         make(map[int]Document),
 				TagMap:         make(map[string][]int),
 				KwMap:          make(map[string]map[int]int),
-				stopwords:      []string{"the", "and"},
+				stopWords:      []string{"the", "and"},
 				minKeyworldLen: 3,
 			},
 		},

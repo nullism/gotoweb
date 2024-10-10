@@ -7,9 +7,9 @@ uri_prefix: /docs
 copyright: "2024 Gotoweb"
 version: 1
 
-index:
+search:
   min_keyword_length: 3
-  stopwords: ["the", "and", "how"]
+  stop_words: ["the", "and", "how"]
 
 # Set homepage
 homepage: post-list-1.html
@@ -25,15 +25,13 @@ menu:
   items:
     - title: Home
       href: /index.html
-    - title: Posts
-      href: /post-list-1.html
+    - title: Authoring
+      href: /search.html?tag=authoring
+    - title: Theming
+      href: /search.html?tag=theming
       children:
-        - title: Sub
-          children:
-            - title: Hello 2
-              href: /posts/sub/hello2.html
-        - title: Posts 1
-          href: /post-list-1.html
+        - title: Create a Theme
+          href: /theme/create.html
         - title: Posts 2
           href: /post-list-2.html
     - title: Search

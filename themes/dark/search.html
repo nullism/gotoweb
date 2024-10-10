@@ -4,37 +4,39 @@
 
     <div class="columns">
         <div class="column is-2">
-            {{ $dmap := map }}
-            {{ range .Posts }}
-            {{ $t := ftime .CreatedAt "2006 01/02" }}
-            {{ if not (haskey $dmap $t) }}
-            {{ $dmap = mapset $dmap $t (list .) }}
-            {{ else }}
-            {{ $dmap = mapset $dmap $t (listadd (index $dmap $t) .) }}
-            {{ end }}
-            {{ end }}
-            <div>
-                <ul>
-                    {{ range $k, $v := $dmap }}
+            <section class="section">
+                {{ $dmap := map }}
+                {{ range .Posts }}
+                {{ $t := ftime .CreatedAt "2006 01/02" }}
+                {{ if not (haskey $dmap $t) }}
+                {{ $dmap = mapset $dmap $t (list .) }}
+                {{ else }}
+                {{ $dmap = mapset $dmap $t (listadd (index $dmap $t) .) }}
+                {{ end }}
+                {{ end }}
+                <div>
+                    <ul>
+                        {{ range $k, $v := $dmap }}
 
-                    <li>
-                        <b>{{$k}}</b>
-                        <ul>
-                            {{ range $v }}
-                            <li><a href="{{ .Href }}">{{ .Title }}</a></li>
-                            {{ end }}
-                        </ul>
-                    </li>
-                    {{ end }}
-                </ul>
-            </div>
+                        <li>
+                            <b>{{$k}}</b>
+                            <ul>
+                                {{ range $v }}
+                                <li><a href="{{ .Href }}">{{ .Title }}</a></li>
+                                {{ end }}
+                            </ul>
+                        </li>
+                        {{ end }}
+                    </ul>
+                </div>
+            </section>
         </div>
 
         <div class="column">
             <section class="section">
 
                 <div class="field has-addons">
-                    <p class="control">
+                    <p class="control is-expanded">
                         <input type="text" class="input" id="search-text" onkeyup="submitSearchDelayed(300)"
                             placeholder="Search" />
                     </p>
@@ -51,6 +53,7 @@
                     {{ end }}
                 </div>
 
+                <div class="block"></div>
                 <div id="search-results"></div>
             </section>
 
@@ -114,7 +117,8 @@
         function submitSearch() {
             var searchText = document.getElementById("search-text").value
             clearResults()
-            if (searchText.length <= kwminlen) {
+            if (searchText.length < kwminlen) {
+                resultContainer.innerHTML = "<p>query must be a minimum length of " + kwminlen + "</p>"
                 return
             }
 

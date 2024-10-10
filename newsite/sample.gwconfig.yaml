@@ -21,11 +21,11 @@ copyright: {{ .Title }} {{ .Year }}
 # language: en
 
 # Search index configuration
-index:
+search:
   # Minimum keyword length for the search index
   min_keyword_length: 3
   # List of words to ignore in the search index
-  stopwords: ["the", "and", "how"]
+  stop_words: ["the", "and", "how"]
 
 # Theme configuration
 theme:
