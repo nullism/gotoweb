@@ -46,5 +46,6 @@ func TestIndex_Add(t *testing.T) {
 	assert.Equal(t, 1, len(idx.DocMap))
 	assert.Equal(t, 2, len(idx.TagMap))
 	assert.Equal(t, 1, idx.TagMap["example"][0])
-	assert.Equal(t, map[int]int{1: 6}, idx.KwMap["example"])
+	n := titleKeywordValue + tagKeywordValue + 1
+	assert.Equal(t, map[int]int{1: n}, idx.KwMap["example"])
 }
